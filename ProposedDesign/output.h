@@ -36,14 +36,14 @@ short PutOnList(sprlist *Sprinklers, short type, short x, short y);
  * 
  * FILE *bitmap - output file
  * 
- * lawn *Lawn - points to (0, 0) lawn pixel
+ * char **Lawn - matrix that stores lawn's pixels
  * 
  * parameters *Param - points to structure that holds 
  * lawn's parameters
  * 
  * Returns 0 on failure
  */
-short CreateBitmap(FILE *bitmap, lawn *Lawn, parameters *Param);
+short CreateBitmap(FILE *bitmap, char **Lawn, parameters *Param);
 
 /*
  * Creates file that stores information on sprinklers'

@@ -8,7 +8,7 @@
 /*
  * Places sprinklers on lawn in order to water it
  * 
- * lawn *Lawn - points to (0, 0) lawn pixel
+ * char **Lawn - matrix that stores lawn's pixels
  * 
  * parameters *Param - points to structure that holds 
  * lawn's parameters
@@ -17,6 +17,6 @@
  * 
  * Returns 0 on failure
  */
-short DoTheJob(lawn *Lawn, parameters *Param, sprlist *Sprinklers);
+short DoTheJob(char **Lawn, parameters *Param, sprlist *Sprinklers);
 
 #endif

@@ -6,20 +6,21 @@
 #include "lawnholder.h"
 
 /*
- * Transforms information from lawnfile into Lawn structure. 
+ * Transforms information from lawnfile into matrix
+ * (0 - non-lawn, 1...n - water level - 1). 
  * Updates Param structure with necessary information.
  * 
  * FILE *lawnfile - stores to-be-transformed lawn.
  * Desired format is detailed in documentation enclosed
  * 
- * lawn *Lawn - points to (0, 0) lawn pixel
- * 
  * parameters *Param - points to structure that holds 
  * lawn's parameters. Function updates fields of this structure
  * 
- * Returns 0 on failure
+ * Returns NULL on failure
+ * 
+ * Returns pointer to created matrix on success.
  */
-short CreateLawn(FILE *lawnfile, lawn *Lawn, parameters *Param);
+char **CreateLawn(FILE *lawnfile, parameters *Param);
 
 /*
  * Initializes Param structure with necessary information
