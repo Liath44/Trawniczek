@@ -11,9 +11,9 @@
  */
 struct _sprlist
 	{
-	short type;
-	short x;
-	short y;
+	int type;	//90/180/270/360
+	int x;
+	int y;
 	struct _sprlist *next;
 	}
 typedef struct _sprlist sprlist;
@@ -29,7 +29,7 @@ typedef struct _sprlist sprlist;
  * 
  * Returns 0 on failure
  */
-short PutOnList(sprlist *Sprinklers, short type, short x, short y);
+int PutOnList(sprlist *Sprinklers, int type, int x, int y);
 
 /*
  * Creates graphical representation of Lawn
@@ -43,7 +43,7 @@ short PutOnList(sprlist *Sprinklers, short type, short x, short y);
  * 
  * Returns 0 on failure
  */
-short CreateBitmap(FILE *bitmap, char **Lawn, parameters *Param);
+int CreateBitmap(FILE *bitmap, char **Lawn, parameters *Param);
 
 /*
  * Creates file that stores information on sprinklers'

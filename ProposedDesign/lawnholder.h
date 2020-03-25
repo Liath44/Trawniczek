@@ -9,10 +9,10 @@
  */
 struct _parameters
 	{
-	short xsize;
-	short ysize;
-	unsigned short time;	//time spent on watering
-	short 360radius;	//radius of 360 sprinkler
+	int xsize;
+	int ysize;
+	int time;	//time spent on watering
+	int 360radius;	//radius of 360 sprinkler
 	double currentmean;
 	}
 typedef struct _parameters parameters;
@@ -45,6 +45,6 @@ double CalculateMean(char **Lawn, parameters *Param);
  * 
  * sprlist *Sprinklers - list of already placed sprinklers
  */
-void PutSprinkler(char **Lawn, short type, short x, short y, double deg, sprlist *Sprinklers);
+void PutSprinkler(char **Lawn, int type, int x, int y, double deg, sprlist *Sprinklers);
 
 #endif
