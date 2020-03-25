@@ -119,6 +119,7 @@ int DoTheJob(char **Lawn, parameters *Param, sprlist *Sprinklers);
 			FreePoints(pivareas);
 			return 0;
 			}
+		//
 		FreeRectangles(rectangles);
 		areas = areas -> next;
 		}
