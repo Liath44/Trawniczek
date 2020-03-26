@@ -100,9 +100,47 @@ void FreeRectangles(reclist *rec)
 		}
 	}
 
-reclist *DivideRectangle(char **Lawn, int x, int y, int xsize, int ysize)
+int CalcLenRight(char **Lawn, int x, int y, int xsize)
 	{
-	//
+	int i = x + 1;
+	while(i < xsize && *(*(Lawn+JUMP*i)+JUMP*y) != 0)
+		i++;
+	return i - x;
+	}
+
+int CheckRow(char **Lawn, int x, int y, int len, int xsize, int ysize)
+	{
+	if(y == ysize)
+		return 1;
+	if(x - 1 >= 0 && *(*(Lawn+JUMP*(x-1))+JUMP*y) != 0)
+		return 1;
+	int i = 0;
+	while(i < len)
+		{
+		if(*(*(Lawn+JUMP*(x+i))+JUMP*y) == 0)
+			return 1;
+		i++;
+		}
+	if(x + i < xsize && *(*(Lawn+JUMP*(x+i))+JUMP*y) != 0)
+		return 1;
+	return 0;
+	}
+
+int UpDownRectangle(char **Lawn, int x, int y, int xsize, int ysize, reclist *rectangles)
+	{
+	rectangles -> x1 = x;
+	rectangles -> y1 = y;
+	int len = CalcLenRight(Lawn, x, y, xsize);
+	int j = y + 1;
+	int isend = CheckRow(Lawn, x, j, len, xsize, ysize);
+	while(isend == 0)
+		{
+		j++;
+		isend = CheckRow(Lawn, x, j, len, xsize, ysize);
+		}
+	rectangles -> x2 = x + len - 1;
+	rectangles -> y2 = j - 1;
+	return 1;
 	}
 
 int DoTheJob(char **Lawn, parameters *Param, sprlist *Sprinklers);
@@ -113,9 +151,16 @@ int DoTheJob(char **Lawn, parameters *Param, sprlist *Sprinklers);
 		return 0;
 	while(areas != NULL)
 		{
-		reclist *rectangles = DivideRectangle(Lawn, areas->x, areas->y, Param->xsize/JUMP, Param->ysize/JUMP);
+		reclist *rectangles = malloc(sizeof(*rectangles));
 		if(rectangles == NULL)
 			{
+			FreePoints(pivareas);
+			return 0;
+			}
+		int errcode = UpDownRectangle(Lawn, areas->x, areas->y, Param->xsize/JUMP, Param->ysize/JUMP, rectangles);
+		if(errcode == 0)
+			{
+			FreeRectangles(rectangles);
 			FreePoints(pivareas);
 			return 0;
 			}
