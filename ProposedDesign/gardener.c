@@ -140,6 +140,7 @@ int UpDownRectangle(char **Lawn, int x, int y, int xsize, int ysize, reclist *re
 		}
 	rectangles -> x2 = x + len - 1;
 	rectangles -> y2 = j - 1;
+	//
 	return 1;
 	}
 
