@@ -126,6 +126,92 @@ int CheckRow(char **Lawn, int x, int y, int len, int xsize, int ysize)
 	return 0;
 	}
 
+reclist *InitNewRectangle(reclist *rectangles)
+	{
+	reclist *piv = malloc(sizeof(*piv));
+	if(piv == NULL)
+		return NULL;
+	while(rectangles -> next != NULL)
+		rectangles = rectangles -> next;
+	piv -> next = NULL;
+	rectangles -> next = piv;
+	return piv;
+	}
+
+int CheckForUpDown(char **Lawn, int x, int j, int xsize, int ysize, int len, reclist *rectangles)
+	{
+	int i1 = x + len - 1;
+	//int y1 = j;	
+	while(i1 >= x)
+		{
+		if(*(*(Lawn+JUMP*i1)+JUMP*j) != 0 && (i1 == 0 || *(*(Lawn+JUMP*(i1-1))+JUMP*j) == 0))
+			{
+			rectangles = InitNewRectangle(rectangles);
+			if(rectangles == NULL)
+				return 0;
+			if(UpDownRectangle(Lawn, i1, j, xsize, ysize, rectangles) == 0)
+				return 0;
+			}
+		--i1;
+		}
+	if(i1 >= 0 && *(*(Lawn+JUMP*i1)+JUMP*j) != 0)
+		{
+		while(i1 >= 0 && *(*(Lawn+JUMP*i1)+JUMP*j) != 0)
+			--i1;
+		rectangles = InitNewRectangle(rectangles);
+		if(rectangles == NULL)
+			return 0;
+		if(UpDownRectangle(Lawn, i1, j, xsize, ysize, rectangles) == 0)
+			return 0;
+		}
+	return 1;
+	}
+//y-1 zawsze nie będzie < 0
+int CheckForDownUp(char **Lawn, int x1, int x2, int y, int xszie, int ysize, reclist *rectangles)
+	{
+	int i = x1 - 2;
+	while(i >= 0 && *(*(Lawn+JUMP*i)+JUMP*y) != 0)
+		{
+		if(*(*(Lawn+JUMP*i)+JUMP*(y-1)) != 0)
+			{
+			rectangles = InitNewRectangle(rectangles);
+			if(rectangles == NULL)
+				return 0;
+			if(DownUpRectangle(Lawn, i, y-1, xsize, ysize, rectangles) == 0)
+				return 0;
+			--i;
+			while(i >= 0 && *(*(Lawn+JUMP*i)+JUMP*(y-1)) != 0)
+				--i;
+			}
+		--i;
+		}
+	int j = x2 + 2;
+	while(j < xsize && *(*(Lawn+JUMP*j)+JUMP*y) != 0)
+		{
+		if(*(*(Lawn+JUMP*j)+JUMP*(y-1)) != 0)
+			{
+			int newrec = j + 1;
+			while(newrec < xsize && *(*(Lawn+JUMP*newrec)+JUMP*(y-1)) != 0)
+				++newrec;
+			--newrec;
+			rectangles = InitNewRectangle(rectangles);
+			if(rectangles == NULL)
+				return 0;
+			if(DownUpRectangle(Lawn, newrec, y-1, xsize, ysize, rectangles) == 0)
+				return 0;
+			++j;
+			while(j <= newrec)
+				{
+				if(*(*(Lawn+JUMP*j)+JUMP*y) != 0)
+					j = xsize;	//break
+				++j;				
+				}
+			}
+		++j;
+		}
+	return 1;
+	}
+
 int UpDownRectangle(char **Lawn, int x, int y, int xsize, int ysize, reclist *rectangles)
 	{
 	rectangles -> x1 = x;
@@ -140,12 +226,24 @@ int UpDownRectangle(char **Lawn, int x, int y, int xsize, int ysize, reclist *re
 		}
 	rectangles -> x2 = x + len - 1;
 	rectangles -> y2 = j - 1;
-	//
+	if(j < ysize)
+		{
+		if(CheckForUpDown(Lawn, x, j, xsize, ysize, len, rectangles) == 0)
+			return 0;
+		if(CheckForDownUp(Lawn, x, x + len - 1, j, xsize, ysize, rectangles) == 0)
+			return 0;
+		}
 	return 1;
+	}
+
+int DownUpRectangle(char **Lawn, int x, int y, int xsize, int ysize, reclist *rectangles)
+	{
+	//
 	}
 
 int DoTheJob(char **Lawn, parameters *Param, sprlist *Sprinklers);
 	{
+	int errcode = 1;
 	pointlist *areas = FindAreas(Lawn, Param->xsize/JUMP, Param->ysize/JUMP);
 	pointlist *pivareas = areas;
 	if(areas == NULL)
@@ -158,7 +256,8 @@ int DoTheJob(char **Lawn, parameters *Param, sprlist *Sprinklers);
 			FreePoints(pivareas);
 			return 0;
 			}
-		int errcode = UpDownRectangle(Lawn, areas->x, areas->y, Param->xsize/JUMP, Param->ysize/JUMP, rectangles);
+		rectangles -> next = NULL;
+		errcode = UpDownRectangle(Lawn, areas->x, areas->y, Param->xsize/JUMP, Param->ysize/JUMP, rectangles);
 		if(errcode == 0)
 			{
 			FreeRectangles(rectangles);
