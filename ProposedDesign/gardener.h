@@ -22,7 +22,7 @@ struct _reclist
 	int x2;
 	int y2;
 	struct _reclist *next;
-	}
+	};
 typedef struct _reclist reclist;
 
 /*

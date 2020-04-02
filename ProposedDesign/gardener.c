@@ -108,9 +108,18 @@ int CalcLenRight(char **Lawn, int x, int y, int xsize)
 	return i - x;
 	}
 
+//Might be good to merge this with CalcLenRight
+int CalcLenLeft(char **Lawn, int x, int y)
+	{
+	int i = x - 1;
+	while(i >= 0 && *(*(Lawn+JUMP*i)+JUMP*y) != 0)
+		i--;
+	return x - i;
+	}
+
 int CheckRow(char **Lawn, int x, int y, int len, int xsize, int ysize)
 	{
-	if(y == ysize)
+	if(y == ysize || y = -1)
 		return 1;
 	if(x - 1 >= 0 && *(*(Lawn+JUMP*(x-1))+JUMP*y) != 0)
 		return 1;
@@ -166,6 +175,13 @@ int CheckForUpDown(char **Lawn, int x, int j, int xsize, int ysize, int len, rec
 		}
 	return 1;
 	}
+
+int CheckForDownUp2(char **Lawn, int x, int y, int xsize, int ysize, int len, reclist *rectangles)
+	{
+	////////////
+	return 1;
+	}
+
 //y-1 zawsze nie będzie < 0
 int CheckForDownUp(char **Lawn, int x1, int x2, int y, int xszie, int ysize, reclist *rectangles)
 	{
@@ -212,10 +228,16 @@ int CheckForDownUp(char **Lawn, int x1, int x2, int y, int xszie, int ysize, rec
 	return 1;
 	}
 
+int CheckForUpDown2(char **Lawn, int x1, int x2, int y, int xsize, int ysize, reclist *rectangles)
+	{
+	///////////////
+	return 1;
+	}
+
 int UpDownRectangle(char **Lawn, int x, int y, int xsize, int ysize, reclist *rectangles)
 	{
-	rectangles -> x1 = x;
-	rectangles -> y1 = y;
+	rectangles -> x1 = x;	//FIX
+	rectangles -> y1 = y;	//FIX
 	int len = CalcLenRight(Lawn, x, y, xsize);
 	int j = y + 1;
 	int isend = CheckRow(Lawn, x, j, len, xsize, ysize);
@@ -224,8 +246,8 @@ int UpDownRectangle(char **Lawn, int x, int y, int xsize, int ysize, reclist *re
 		j++;
 		isend = CheckRow(Lawn, x, j, len, xsize, ysize);
 		}
-	rectangles -> x2 = x + len - 1;
-	rectangles -> y2 = j - 1;
+	rectangles -> x2 = x + len - 1;	//FIX
+	rectangles -> y2 = j - 1;	//FIX
 	if(j < ysize)
 		{
 		if(CheckForUpDown(Lawn, x, j, xsize, ysize, len, rectangles) == 0)
@@ -238,7 +260,26 @@ int UpDownRectangle(char **Lawn, int x, int y, int xsize, int ysize, reclist *re
 
 int DownUpRectangle(char **Lawn, int x, int y, int xsize, int ysize, reclist *rectangles)
 	{
-	//
+	rectangles -> x2 = x;	//FIX
+	rectangles -> y2 = y;	//FIX
+	int len = CalcLenLeft(Lawn, x, y);
+	int j = y - 1;
+	int isend = CheckRow(Lawn, x - len + 1, j, len, xsize, ysize);
+	while(isend == 0)
+		{
+		j--;
+		isend = CheckRow(Lawn, x - len + 1, j, len, xsize, ysize);
+		}
+	rectangles -> x1 = x - len + 1;	//FIX
+	rectangles -> y1 = j + 1;	//FIX
+	if(j >= 0)
+		{
+		if(CheckForUpDown2(Lawn, x - len + 1, x, j, xsize, ysize, rectangles) == 0)
+			return 0;
+		if(CheckForDownUp2(Lawn, x - len + 1, j, xsize, ysize, len, rectangles) == 0)
+			return 0;
+		}
+	return 1;
 	}
 
 int DoTheJob(char **Lawn, parameters *Param, sprlist *Sprinklers);
