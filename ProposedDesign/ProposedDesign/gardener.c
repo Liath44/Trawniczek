@@ -1,6 +1,9 @@
 #include "gardener.h"
 //stdlib, lawnholder, output
 
+//IMPROPER FILE
+//ORIGINAL IS IN THE OTHER FOLDER lul
+
 /*
 struct _pointlist
 	{
