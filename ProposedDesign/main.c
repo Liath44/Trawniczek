@@ -13,7 +13,7 @@ void FreeMemory(FILE *lawnfile, char **Lawn, parameters *Param)
 
 int main(int argc, char *args[])
 	{
-    int errCode = 0;
+	int errCode = 0;
 	if(argc <= 1)
 		{
 		fprintf(stderr, "No input file\n");
@@ -29,15 +29,15 @@ int main(int argc, char *args[])
 	parameters Param;
 	errCode = InitializeParameters(lawnfile, &Param, argc>2 ? atoi(argc[3]) : 100 );
 	if (errCode != 0)
-    {
-        return EXIT_FAILURE;
-    }
+		{
+		return EXIT_FAILURE;
+		}
 	rewind(lawnfile);
 	errCode = CreateLawn(lawnfile, &Param, Lawn);
 	if (errCode != 0)
-    {
-        return EXIT_FAILURE;
-    }
+		{
+		return EXIT_FAILURE;
+		}
 	fclose(lawnfile);
 	if(Lawn == NULL)
 		{
