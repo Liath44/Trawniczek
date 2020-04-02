@@ -2,6 +2,14 @@
 //stdlib, lawnholder, output
 
 /*
+	TODO:
+ - FIX x1, y1, x2, y2
+ - IF ENTIRE LAWN IS WALL DO NOTHING BUT NO ERROR (?) 
+ - "MERGE" SOME FUNCTIONS
+	TODO:
+*/
+
+/*
 struct _pointlist
 	{
 	int x;
@@ -67,7 +75,7 @@ void FreePoints(pointlist *point)
 
 pointlist *FindAreas(char **Lawn, int xsize, int ysize)
 	{
-	pointlist *ret = NULL
+	pointlist *ret = NULL;
 	for(int j = 0; j < ysize; j++)
 		{
 		for(int i = 0; i < xsize; i++)
@@ -119,7 +127,7 @@ int CalcLenLeft(char **Lawn, int x, int y)
 
 int CheckRow(char **Lawn, int x, int y, int len, int xsize, int ysize)
 	{
-	if(y == ysize || y = -1)
+	if(y == ysize || y == -1)
 		return 1;
 	if(x - 1 >= 0 && *(*(Lawn+JUMP*(x-1))+JUMP*y) != 0)
 		return 1;
@@ -183,7 +191,7 @@ int CheckForDownUp2(char **Lawn, int x, int y, int xsize, int ysize, int len, re
 	}
 
 //y-1 zawsze nie będzie < 0
-int CheckForDownUp(char **Lawn, int x1, int x2, int y, int xszie, int ysize, reclist *rectangles)
+int CheckForDownUp(char **Lawn, int x1, int x2, int y, int xsize, int ysize, reclist *rectangles)
 	{
 	int i = x1 - 2;
 	while(i >= 0 && *(*(Lawn+JUMP*i)+JUMP*y) != 0)
