@@ -6,6 +6,7 @@
  - FIX x1, y1, x2, y2
  - IF ENTIRE LAWN IS WALL DO NOTHING BUT NO ERROR (?) 
  - "MERGE" SOME FUNCTIONS
+ - IS NULL LAWN CHECKED?
 	TODO:
 */
 
@@ -171,10 +172,11 @@ int CheckForUpDown(char **Lawn, int x, int j, int xsize, int ysize, int len, rec
 			}
 		--i1;
 		}
-	if(i1 >= 0 && *(*(Lawn+JUMP*i1)+JUMP*j) != 0)
+	if(i1 >= 0 && *(*(Lawn+JUMP*i1)+JUMP*j) != 0 && *(*(Lawn+JUMP*(i1+1))+JUMP*j) != 0)
 		{
 		while(i1 >= 0 && *(*(Lawn+JUMP*i1)+JUMP*j) != 0)
 			--i1;
+		++i1;
 		rectangles = InitNewRectangle(rectangles);
 		if(rectangles == NULL)
 			return 0;
@@ -193,45 +195,50 @@ int CheckForDownUp2(char **Lawn, int x, int y, int xsize, int ysize, int len, re
 //y-1 zawsze nie będzie < 0
 int CheckForDownUp(char **Lawn, int x1, int x2, int y, int xsize, int ysize, reclist *rectangles)
 	{
-	int i = x1 - 2;
-	while(i >= 0 && *(*(Lawn+JUMP*i)+JUMP*y) != 0)
+	int i = x1 - 1;
+	if(*(*(Lawn+JUMP*x1)+JUMP*y) != 0)
 		{
-		if(*(*(Lawn+JUMP*i)+JUMP*(y-1)) != 0)
+		while(i >= 0 && *(*(Lawn+JUMP*i)+JUMP*y) != 0)
 			{
-			rectangles = InitNewRectangle(rectangles);
-			if(rectangles == NULL)
-				return 0;
-			if(DownUpRectangle(Lawn, i, y-1, xsize, ysize, rectangles) == 0)
-				return 0;
-			--i;
-			while(i >= 0 && *(*(Lawn+JUMP*i)+JUMP*(y-1)) != 0)
-				--i;
-			}
-		--i;
-		}
-	int j = x2 + 2;
-	while(j < xsize && *(*(Lawn+JUMP*j)+JUMP*y) != 0)
-		{
-		if(*(*(Lawn+JUMP*j)+JUMP*(y-1)) != 0)
-			{
-			int newrec = j + 1;
-			while(newrec < xsize && *(*(Lawn+JUMP*newrec)+JUMP*(y-1)) != 0)
-				++newrec;
-			--newrec;
-			rectangles = InitNewRectangle(rectangles);
-			if(rectangles == NULL)
-				return 0;
-			if(DownUpRectangle(Lawn, newrec, y-1, xsize, ysize, rectangles) == 0)
-				return 0;
-			++j;
-			while(j <= newrec)
+			if(*(*(Lawn+JUMP*i)+JUMP*(y-1)) != 0)
 				{
-				if(*(*(Lawn+JUMP*j)+JUMP*y) != 0)
-					j = xsize;	//break
-				++j;				
+				rectangles = InitNewRectangle(rectangles);
+				if(rectangles == NULL)
+					return 0;
+				if(DownUpRectangle(Lawn, i, y-1, xsize, ysize, rectangles) == 0)
+					return 0;
+				--i;
+				while(i >= 0 && *(*(Lawn+JUMP*i)+JUMP*(y-1)) != 0)
+					--i;
 				}
+			--i;
 			}
-		++j;
+		}
+	int j = x2 + 1;
+	if(*(*(Lawn+JUMP*x2)+JUMP*y) != 0)
+		{
+		while(j < xsize && *(*(Lawn+JUMP*j)+JUMP*y) != 0)
+			{
+			if(*(*(Lawn+JUMP*j)+JUMP*(y-1)) != 0)
+				{
+				int newrec = j + 1;
+				while(newrec < xsize && *(*(Lawn+JUMP*newrec)+JUMP*(y-1)) != 0)
+					++newrec;
+				--newrec;
+				rectangles = InitNewRectangle(rectangles);
+				if(rectangles == NULL)
+					return 0;
+				if(DownUpRectangle(Lawn, newrec, y-1, xsize, ysize, rectangles) == 0)
+					return 0;
+				while(j <= newrec)
+					{
+					if(*(*(Lawn+JUMP*j)+JUMP*y) == 0)
+						j = xsize;	//break
+					++j;				
+					}
+				}
+			++j;
+			}
 		}
 	return 1;
 	}
