@@ -206,7 +206,12 @@ int CheckForDownUp(char **Lawn, int x1, int x2, int y, int xsize, int ysize, rec
 					printf("DU: x = %d, y = %d\n", i, y - 1);
 					--i;
 					while(i >= 0 && *(*(Lawn+JUMP*i)+JUMP*(y-1)) != 0)
+						{
+						if(*(*(Lawn+JUMP*i)+JUMP*y) == 0)
+							i = -4; //break
 						--i;
+						}
+					++i;
 				}
 			--i;
 			}
@@ -278,15 +283,15 @@ int main(void)
 	FILE *plf = fopen("pseudolawn", "r");	//pseudo-lawn file
 	Lawn = ReadLawn(plf, &xsize, &ysize);
 	PrintLawn(Lawn, xsize, ysize);
-	//pointlist *points = FindAreas(Lawn, xsize, ysize);	OK
+	//pointlist *points = FindAreas(Lawn, xsize, ysize);	//OK
 	//PrintPoints(points);
-	//int len1 = CalcLenRight(Lawn, 3, 0, xsize);			OK
-	//int len2 = CalcLenLeft(Lawn, 9, 0);					OK
+	//int len1 = CalcLenRight(Lawn, 3, 0, xsize);		//OK
+	//int len2 = CalcLenLeft(Lawn, 9, 0);			//OK
 	//printf("len1 = %d    len2 = %d\n", len1, len2);
-	//int cr = CheckRow(Lawn, 0, 2, 10, xsize, ysize);		OK
+	//int cr = CheckRow(Lawn, 0, 2, 10, xsize, ysize);	//OK
 	//printf("1 - WRONG | 0 - OK => %d\n", cr);
 	//reclist tmp;
-	//CheckForUpDown(Lawn, 2, 2, xsize, ysize, 5, &tmp);	OK
-	//CheckForDownUp(Lawn, 2, 6, 2, xsize, ysize, &tmp);	OK
+	//CheckForUpDown(Lawn, 2, 2, xsize, ysize, 5, &tmp);	//OK
+	//CheckForDownUp(Lawn, 2, 6, 2, xsize, ysize, &tmp);	//CHECK BUG FIXES
 	return EXIT_SUCCESS;
 	}

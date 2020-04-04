@@ -30,6 +30,9 @@ struct _reclist
 typedef struct _reclist reclist;
 */
 
+/*
+ * Resets markers on Lawn by multiplying each pixel by -1
+ */
 void ResetSignsJump(char **Lawn, int xsize, int ysize)
 	{
 	for(int j = 0; j < ysize; j++)
@@ -39,9 +42,14 @@ void ResetSignsJump(char **Lawn, int xsize, int ysize)
 		}
 	}
 
+/*
+ * Marks Lawn area enclosed by walls by changing the value
+ * to negative. 
+ */
 void SignAreaJump(char **Lawn, int xsize, int ysize, int i, int j)
 	{
 	*(*(Lawn+JUMP*i)+JUMP*j) = -(*(*(Lawn+JUMP*i)+JUMP*j));
+	//Check recursively for pixels belonging to the area
 	if(i + 1 < xsize && *(*(Lawn+JUMP*(i+1))+JUMP*j) == 1)
 		SignAreaJump(Lawn, xsize, ysize, i + 1, j);
 	if(i - 1 >= 0 && *(*(Lawn+JUMP*(i-1))+JUMP*j) == 1)
@@ -52,6 +60,10 @@ void SignAreaJump(char **Lawn, int xsize, int ysize, int i, int j)
 		SignAreaJump(Lawn, xsize, ysize, i, j - 1);
 	}
 
+/*
+ * Creates a point. New points are put at the beginning
+ * of the list.
+ */
 pointlist *NewPoint(int x, int y, pointlist *next)
 	{
 	pointlist *outcome = malloc(sizeof(*outcome));
@@ -74,6 +86,12 @@ void FreePoints(pointlist *point)
 		}
 	}
 
+/*
+ * Creates a list of every enclosed area in a Lawn.
+ * 
+ * Returns said list on success
+ * Returns NULL on failure
+ */
 pointlist *FindAreas(char **Lawn, int xsize, int ysize)
 	{
 	pointlist *ret = NULL;
@@ -83,6 +101,7 @@ pointlist *FindAreas(char **Lawn, int xsize, int ysize)
 			{
 			if(*(*(Lawn+JUMP*i)+JUMP*j) == 1)
 				{
+				//Found new area
 				pointlist *piv = NewPoint(i, j, ret);
 				if(piv == NULL)
 					{
@@ -90,6 +109,7 @@ pointlist *FindAreas(char **Lawn, int xsize, int ysize)
 					return NULL;
 					}
 				ret = piv;
+				//Mark area by making it's pixels negative
 				SignAreaJump(Lawn, xsize, ysize, i, j);
 				}
 			}
@@ -108,30 +128,44 @@ void FreeRectangles(reclist *rec)
 		rec = piv;
 		}
 	}
-
+/*
+ * Calculates considered rectangle length from
+ * left to right.
+ */
 int CalcLenRight(char **Lawn, int x, int y, int xsize)
 	{
+	//First pixel is always lawn
 	int i = x + 1;
 	while(i < xsize && *(*(Lawn+JUMP*i)+JUMP*y) != 0)
 		i++;
 	return i - x;
 	}
 
-//Might be good to merge this with CalcLenRight
+/*
+ * Calculates considered rectangle length from
+ * right to left.
+ */
 int CalcLenLeft(char **Lawn, int x, int y)
 	{
+	//First pixel is always lawn
 	int i = x - 1;
 	while(i >= 0 && *(*(Lawn+JUMP*i)+JUMP*y) != 0)
 		i--;
 	return x - i;
 	}
 
+/*
+ * Checks wheher considered row should still be
+ * considered a part of subject rectangle or not
+ */
 int CheckRow(char **Lawn, int x, int y, int len, int xsize, int ysize)
 	{
 	if(y == ysize || y == -1)
 		return 1;
+	//Is row's left side wall?
 	if(x - 1 >= 0 && *(*(Lawn+JUMP*(x-1))+JUMP*y) != 0)
 		return 1;
+	//Are pixels inside row lawn?
 	int i = 0;
 	while(i < len)
 		{
@@ -139,11 +173,19 @@ int CheckRow(char **Lawn, int x, int y, int len, int xsize, int ysize)
 			return 1;
 		i++;
 		}
+	//Is row's right side wall?
 	if(x + i < xsize && *(*(Lawn+JUMP*(x+i))+JUMP*y) != 0)
 		return 1;
 	return 0;
 	}
 
+/*
+ * Allocates memory for a new rectangle and
+ * puts it at the end of list.
+ * 
+ * Returns created rectangle on success
+ * Returns NULL on failure
+ */
 reclist *InitNewRectangle(reclist *rectangles)
 	{
 	reclist *piv = malloc(sizeof(*piv));
@@ -155,13 +197,37 @@ reclist *InitNewRectangle(reclist *rectangles)
 	rectangles -> next = piv;
 	return piv;
 	}
-
+/*
+ * After examining subject rectangle check for 
+ * other rectangles that could be examined
+ * from top to bottom (@int:UpDownRectangle(...))
+ * 
+ * char **Lawn - matrix that stores lawn's pixels
+ * 
+ * int x - x coordinate of a right-down corner of 
+ * subject rectangle 
+ * 
+ * int j - y coordinate of a row in which to search
+ * for new rectangles
+ * 
+ * int xsize, ysize - Lawn's size
+ * 
+ * int len - length of subject rectangle
+ * 
+ * reclist *rectangles - points to a certain part 
+ * of list of already found rectangles
+ * 
+ * Returns 0 on memory allocation error
+ * Returns 1 otherwise
+ */
 int CheckForUpDown(char **Lawn, int x, int j, int xsize, int ysize, int len, reclist *rectangles)
 	{
+	//x coordinate of left-down corner
 	int i1 = x + len - 1;
-	//int y1 = j;	
+	//Check for UpDowns directly below rectangle
 	while(i1 >= x)
 		{
+		//New rectangle when it's left wall is found
 		if(*(*(Lawn+JUMP*i1)+JUMP*j) != 0 && (i1 == 0 || *(*(Lawn+JUMP*(i1-1))+JUMP*j) == 0))
 			{
 			rectangles = InitNewRectangle(rectangles);
@@ -172,8 +238,12 @@ int CheckForUpDown(char **Lawn, int x, int j, int xsize, int ysize, int len, rec
 			}
 		--i1;
 		}
+	//Check for UpDowns to the left of the rectangle
+	//The passage on j row must be clear
 	if(i1 >= 0 && *(*(Lawn+JUMP*i1)+JUMP*j) != 0 && *(*(Lawn+JUMP*(i1+1))+JUMP*j) != 0)
 		{
+		//New rectangle when it's left wall is found
+		//Only one rectangle possible in this scenario
 		while(i1 >= 0 && *(*(Lawn+JUMP*i1)+JUMP*j) != 0)
 			--i1;
 		++i1;
@@ -186,20 +256,50 @@ int CheckForUpDown(char **Lawn, int x, int j, int xsize, int ysize, int len, rec
 	return 1;
 	}
 
+/*
+ * Analogical to CheckForDownUp but called
+ * by DownUpRectangle
+ */
 int CheckForDownUp2(char **Lawn, int x, int y, int xsize, int ysize, int len, reclist *rectangles)
 	{
 	////////////
 	return 1;
 	}
 
-//y-1 zawsze nie będzie < 0
+/*
+ * After examining subject rectangle check for 
+ * other rectangles that could be examined
+ * from bottom to top (@int:UpDownRectangle(...))
+ * 
+ * char **Lawn - matrix that stores lawn's pixels
+ * 
+ * int x1 - x coordinate of a left-down corner of 
+ * subject rectangle 
+ * 
+ * int x2 - x coordinate of a right-down corner of 
+ * subject rectangle
+ * 
+ * int y - y coordinate a row above which new 
+ * rectangles should be searched for
+ * 
+ * int xsize, ysize - Lawn's size
+ * 
+ * reclist *rectangles - points to a certain part 
+ * of list of already found rectangles
+ * 
+ * Returns 0 on memory allocation error
+ * Returns 1 otherwise
+ */
 int CheckForDownUp(char **Lawn, int x1, int x2, int y, int xsize, int ysize, reclist *rectangles)
 	{
+	//Check for DownUps to the left of the rectangle 
 	int i = x1 - 1;
 	if(*(*(Lawn+JUMP*x1)+JUMP*y) != 0)
 		{
+		//While row is still lawn
 		while(i >= 0 && *(*(Lawn+JUMP*i)+JUMP*y) != 0)
 			{
+			//If pixel above lawn pixel is also lawn
 			if(*(*(Lawn+JUMP*i)+JUMP*(y-1)) != 0)
 				{
 				rectangles = InitNewRectangle(rectangles);
@@ -207,13 +307,20 @@ int CheckForDownUp(char **Lawn, int x1, int x2, int y, int xsize, int ysize, rec
 					return 0;
 				if(DownUpRectangle(Lawn, i, y-1, xsize, ysize, rectangles) == 0)
 					return 0;
+				//Go left 
 				--i;
 				while(i >= 0 && *(*(Lawn+JUMP*i)+JUMP*(y-1)) != 0)
+					{
+					if(*(*(Lawn+JUMP*i)+JUMP*y) == 0)
+						i = -4;
 					--i;
+					}
+				++i;
 				}
 			--i;
 			}
 		}
+	//Check for DownUps to the right of the rectangle 
 	int j = x2 + 1;
 	if(*(*(Lawn+JUMP*x2)+JUMP*y) != 0)
 		{
@@ -243,12 +350,37 @@ int CheckForDownUp(char **Lawn, int x1, int x2, int y, int xsize, int ysize, rec
 	return 1;
 	}
 
+/*
+ * Analogical to CheckForUpDown but called
+ * by DownUpRectangle
+ */
 int CheckForUpDown2(char **Lawn, int x1, int x2, int y, int xsize, int ysize, reclist *rectangles)
 	{
 	///////////////
 	return 1;
 	}
 
+/*
+ * Function finds a rectangle which:
+ *  - is defined by two points one of which
+ * is (x, y)
+ *  - has the longest length possible
+ *  - is enclosed by walls from left & right
+ * The search is done from top-left corner to 
+ * down-right corner.
+ * 
+ * char **Lawn - matrix that stores lawn's pixels
+ * 
+ * int x, y - coordinates of top-left corner
+ * 
+ * int xsize, ysize - Lawn's size
+ * 
+ * reclist *rectangles - stores to-be-found 
+ * parameters of a rectangle
+ * 
+ * Returns 0 on memory allocation errors
+ * Returns 1 otherwise
+ */
 int UpDownRectangle(char **Lawn, int x, int y, int xsize, int ysize, reclist *rectangles)
 	{
 	rectangles -> x1 = x;	//FIX
@@ -273,6 +405,11 @@ int UpDownRectangle(char **Lawn, int x, int y, int xsize, int ysize, reclist *re
 	return 1;
 	}
 
+/*
+ * Analogical to UpDownRectangle but the
+ * search is done from down-right corner 
+ * to up-left corner
+ */ 
 int DownUpRectangle(char **Lawn, int x, int y, int xsize, int ysize, reclist *rectangles)
 	{
 	rectangles -> x2 = x;	//FIX
