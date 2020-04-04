@@ -46,7 +46,7 @@ int main(int argc, char *args[])
 		return EXIT_FAILURE;
 		}
 
-	sprlist Sprinklers;
+	sprlist * Sprinklers;
 	if(DoTheJob(Lawn, &Param, &Sprinklers) == 0)
 		{
 		FreeMemory(lawnfile, Lawn, &Param);
