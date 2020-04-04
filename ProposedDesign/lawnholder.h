@@ -7,7 +7,7 @@
 /*
  * Structure for holding lawn's parameters
  */
-struct _parameters
+typedef struct _parameters
 	{
 	int xsize;
 	int ysize;
@@ -15,8 +15,7 @@ struct _parameters
 	int time;	//time spent on watering
 	int 360radius;	//radius of 360 sprinkler
 	double currentmean;
-	}
-typedef struct _parameters parameters;
+	} parameters;
 
 /*
  * Calculates arithmetic mean of pixel's waterlvl in Lawn
