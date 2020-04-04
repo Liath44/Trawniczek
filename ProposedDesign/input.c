@@ -32,12 +32,12 @@ int CreateLawn(FILE *lawnfile, parameters *Param, char **lawn) //obs³uga b³êdów 
         }
         else if (c == emp)
         {
-            fillSquare(lawn, x, y, 0, Param->pixelsize);
+            fillSquare(lawn, x, y, 1, Param->pixelsize);
             x++;
         }
         else if (c == blk)
         {
-            fillSquare(lawn, x, y, -1, Param->pixelsize);
+            fillSquare(lawn, x, y, 0, Param->pixelsize);
             x++;
         }
         else
