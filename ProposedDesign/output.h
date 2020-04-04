@@ -27,7 +27,9 @@ typedef struct _sprlist
  *
  * short x, y - sprinkler's coordinates
  *
- * Returns 0 on failure
+ * Returns 0 on success
+ *
+ * Returns 1 on failure
  */
 int PutOnList(sprlist **Sprinklers, int type, int x, int y);
 

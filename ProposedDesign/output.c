@@ -25,3 +25,16 @@ int PutOnList(sprlist **Sprinklers, int type, int x, int y)
     tmp->next = nw;
     return 0;
 }
+
+//int CreateBitmap(FILE *bitmap, char **Lawn, parameters *Param)
+
+void CreateOutputFile(FILE *output, sprlist *Sprinklers)
+{
+    int licz = 0;
+    while(Sprinklers != NULL)
+    {
+        fptintf(output, "%3d: [%3d] in (%d, %d)\n",
+                licz++, Sprinklers->type, Sprinklers->x, Sprinklers->y);
+        Sprinklers = Sprinklers->next;
+    }
+}
