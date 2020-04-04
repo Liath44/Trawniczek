@@ -20,7 +20,8 @@ typedef struct _sprlist
 /*
  * Puts subject sprinkler on list
  *
- * sprlist *Sprinklers - list of already placed sprinklers
+ * sprlist **Sprinklers - pointer to the list
+ * of already placed sprinklers
  *
  * short type - sprinkler's type (90/180/270/360)
  *
@@ -28,7 +29,7 @@ typedef struct _sprlist
  *
  * Returns 0 on failure
  */
-int PutOnList(sprlist *Sprinklers, int type, int x, int y);
+int PutOnList(sprlist **Sprinklers, int type, int x, int y);
 
 /*
  * Creates graphical representation of Lawn
