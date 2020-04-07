@@ -210,7 +210,7 @@ reclist *InitNewRectangle(reclist *rectangles)
 /*
  * Checks whether point (x, y) is inside one
  * of rectangles from reclist *rl
- * 
+ *
  * Returns 1 if true
  * Returns 0 otherwise
  */
@@ -586,10 +586,19 @@ int DownUpRectangle(char **Lawn, int x, int y, int xsize, int ysize, reclist *re
 	return 1;
 	}
 
-int DoTheJob(char **Lawn, parameters *Param, sprlist *Sprinklers)
+void PrintRectangles(reclist *r)
+	{
+	while(r != NULL)
+		{
+		printf("(%d, %d) - (%d, %d)\n", r->x1, r->y1, r->x2, r->y2);
+		r = r -> next;
+		}
+	}
+
+int DoTheJob(char **Lawn, int xsize, int ysize)
 	{
 	int errcode = 1;
-	pointlist *areas = FindAreas(Lawn, Param->xsize/JUMP, Param->ysize/JUMP);
+	pointlist *areas = FindAreas(Lawn, xsize, ysize);
 	pointlist *pivareas = areas;
 	if(areas == NULL)
 		return 0;
@@ -602,7 +611,7 @@ int DoTheJob(char **Lawn, parameters *Param, sprlist *Sprinklers)
 			return 0;
 			}
 		rectangles -> next = NULL;
-		errcode = UpDownRectangle(Lawn, areas->x, areas->y, Param->xsize/JUMP, Param->ysize/JUMP, rectangles, rectangles);
+		errcode = UpDownRectangle(Lawn, areas->x, areas->y, xsize, ysize, rectangles, rectangles);
 		if(errcode == 0)
 			{
 			FreeRectangles(rectangles);
@@ -610,6 +619,7 @@ int DoTheJob(char **Lawn, parameters *Param, sprlist *Sprinklers)
 			return 0;
 			}
 		//
+		PrintRectangles(rectangles);
 		FreeRectangles(rectangles);
 		areas = areas -> next;
 		}
