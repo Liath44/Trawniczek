@@ -7,9 +7,7 @@
  - IF ENTIRE LAWN IS WALL DO NOTHING BUT NO ERROR (?) 
  - "MERGE" SOME FUNCTIONS
  - IS NULL LAWN CHECKED?
- - CHECKING WHETHER RECTANGLE WAS FOUND IS NECCESSARY ***
-                                                      *-*
-                                                      ***					
+ - CHANGE STRUCT'S NAME TO CAPS LOCK			
 	TODO:
 */
 
@@ -586,6 +584,9 @@ int DownUpRectangle(char **Lawn, int x, int y, int xsize, int ysize, reclist *re
 	return 1;
 	}
 
+//FillRecGreedily(Lawn, rectangles, 1, Param->time)
+int FillRecGreedily(char **Lawn, reclist *Rectangles, double currmean)
+
 int DoTheJob(char **Lawn, parameters *Param, sprlist *Sprinklers)
 	{
 	int errcode = 1;
@@ -609,7 +610,13 @@ int DoTheJob(char **Lawn, parameters *Param, sprlist *Sprinklers)
 			FreePoints(pivareas);
 			return 0;
 			}
-		//
+		if(FillRecGreedily(Lawn, rectangles, 1, Param->time, Param->nlawn) == 0)
+			{
+			FreeRectangles(rectangles);
+			FreePoints(pivareas);
+			return 0;
+			}
+		///////////////
 		FreeRectangles(rectangles);
 		areas = areas -> next;
 		}

@@ -12,6 +12,7 @@ typedef struct _parameters
 	int xsize;
 	int ysize;
 	int pixelsize; //size of one character in the array
+	int nlawn;	//Number of waterable pixels
 	int time;	//time spent on watering
 	int 360radius;	//radius of 360 sprinkler
 	double currentmean;
