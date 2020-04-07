@@ -35,16 +35,18 @@ double CalculateMean(char **Lawn, parameters *Param);
  *
  * char **Lawn - matrix that stores lawn's pixels
  *
- * short type - sprinkler's type (90/180/270/360)
+ * int type - sprinkler's type (90/180/270/360)
  *
- * short x, y - sprinkler's coordinates
+ * int x, y - sprinkler's coordinates
  *
- * double deg - degree between OX and circular's segment "arm" -
+ * int deg - degree between OX and circular's segment "arm" -
  * the one that is nearer OX when circular segment is placed
  * with rounded side upwards
  *
  * sprlist *Sprinklers - list of already placed sprinklers
+ *
+ * Returns 0 on failure
  */
-void PutSprinkler(char **Lawn, int type, int x, int y, double deg, sprlist *Sprinklers);
+int PutSprinkler(char **Lawn, int type, int x, int y, int deg, sprlist *Sprinklers);
 
 #endif
