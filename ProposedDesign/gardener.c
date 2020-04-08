@@ -7,7 +7,9 @@
  - IF ENTIRE LAWN IS WALL DO NOTHING BUT NO ERROR (?) 
  - "MERGE" SOME FUNCTIONS
  - IS NULL LAWN CHECKED?
- - CHANGE STRUCT'S NAME TO CAPS LOCK			
+ - CHANGE STRUCT'S NAME TO CAPS LOCK	
+ - COMMENT DOTHEJOB AND STRUCTURES	
+ - FUNCTION FOR SPRSTATS	
 	TODO:
 */
 
@@ -584,8 +586,56 @@ int DownUpRectangle(char **Lawn, int x, int y, int xsize, int ysize, reclist *re
 	return 1;
 	}
 
-//FillRecGreedily(Lawn, rectangles, 1, Param->time)
-int FillRecGreedily(char **Lawn, reclist *Rectangles, double currmean)
+void MakeDecisions(char *mode, char *type, reclist *Rectangles, int 360Radius)
+	{
+	int xlen = Rectangles->x2 - Rectangles->x1 + 1;
+	int ylen = Rectangles->y2 - Rectangles->y1 + 1;
+	if(xlen <= 360radius*2+1 && ylen <= 360radius*2+1)
+		{
+		*mode = 'm';
+		return;
+		}
+	int curbest = xlen;
+	for(int i = 0; i < 4; i++)
+		{
+		if(xlen/((360radius*(4-i))*2+1) != 0 && xlen%((360radius*(4-i))*2+1) < curbest)
+			{
+			*mode = 'h';
+			*type = i;
+			}
+		}
+	for(int j = 0; j < 4; j++)
+		{
+		if(ylen/((360radius*(4-j))*2+1) != 0 && ylen%((360radius*(4-j))*2+1) < curbest)
+			{
+			*mode = 'v';
+			*type = j;
+			}
+		}
+	}
+
+double FillRecGreedily(char **Lawn, reclist *Rectangles, int time, int nlawn, int 360Radius, sprlist *Sprinklers, int Sprstats[])
+	{
+	Sprinklers -> x = -1;
+	Sprinklers -> next = NULL;
+	double pixmean = 1.0;
+	char mode = 'h'	//m/h/v
+	char type = 0;	//0-3 0-90 1-180 2-270 3-360
+	while(Rectangles != NULL)
+		{
+		MakeDecisions(&mode, &type, Rectangles, 360Radius);
+		if(mode == 'm')
+			pixmean = PlaceMiddle(Lawn, Rectangles, pixmean, time, nlawn, 360Radius, Sprinklers, Sprstats, 3);
+		else if(mode == 'h')
+			pixmean = PlaceHorizontally(Lawn, Rectangles, pixmean, time, nlawn, 360Radius*(4-type), Sprinklers, Sprstats, type);
+		else	//mode == 'v'
+			pixmean = PlaceVertically(Lawn, Rectangles, pixmean, time, nlawn, 360Radius*(4-type), Sprinklers, Sprstats, type);
+		if(pixmean == 0)
+			return 0;
+		Rectangles = Rectangles -> next;
+		}
+	return pixmean;
+	}
 
 int DoTheJob(char **Lawn, parameters *Param, sprlist *Sprinklers)
 	{
@@ -610,7 +660,9 @@ int DoTheJob(char **Lawn, parameters *Param, sprlist *Sprinklers)
 			FreePoints(pivareas);
 			return 0;
 			}
-		if(FillRecGreedily(Lawn, rectangles, 1, Param->time, Param->nlawn) == 0)
+		int Sprstats[4] = {0, 0, 0, 0 /* DODAĆ FUNKCJE OBLICZAJĄCE */};
+		double pixmean = FillRecGreedily(Lawn, rectangles, Param->time, Param->nlawn, Param->360radius, Sprinklers, Sprstats)
+		if(pixmean == 0)
 			{
 			FreeRectangles(rectangles);
 			FreePoints(pivareas);
