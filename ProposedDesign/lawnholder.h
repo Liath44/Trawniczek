@@ -37,6 +37,8 @@ double CalculateMean(char **Lawn, parameters *Param);
  * char **Lawn - matrix that stores lawn's pixels
  *
  * int type - sprinkler's type (90/180/270/360)
+ * 
+ * int time - duration of watering
  *
  * int x, y - sprinkler's coordinates
  *
@@ -48,6 +50,6 @@ double CalculateMean(char **Lawn, parameters *Param);
  *
  * Returns 0 on failure
  */
-int PutSprinkler(char **Lawn, int type, int x, int y, int deg, sprlist *Sprinklers);
+int PutSprinkler(char **Lawn, int type, int time, int x, int y, int deg, sprlist *Sprinklers);
 
 #endif

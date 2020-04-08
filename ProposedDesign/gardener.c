@@ -586,7 +586,7 @@ int DownUpRectangle(char **Lawn, int x, int y, int xsize, int ysize, reclist *re
 	return 1;
 	}
 
-void MakeDecisions(char *mode, char *type, reclist *Rectangles, int 360Radius)
+void MakeDecisions(char *mode, int *type, reclist *Rectangles, int 360Radius)
 	{
 	int xlen = Rectangles->x2 - Rectangles->x1 + 1;
 	int ylen = Rectangles->y2 - Rectangles->y1 + 1;
@@ -595,23 +595,22 @@ void MakeDecisions(char *mode, char *type, reclist *Rectangles, int 360Radius)
 		*mode = 'm';
 		return;
 		}
-	int curbest = xlen;
-	for(int i = 0; i < 4; i++)
+	int curbest = xlen + ylen;
+	for(int i = 3; i >= 0; --i)
 		{
-		if(xlen/((360radius*(4-i))*2+1) != 0 && xlen%((360radius*(4-i))*2+1) < curbest)
+		if(xlen >= ((360radius*(4-i))*2+1) && ylen >= ((360radius*(4-i))*2+1) && 
+		xlen%((360radius*(4-i))*2+1) + ylen%((360radius*(4-i))*2+1) <= curbest)
 			{
-			*mode = 'h';
+			curbest = xlen%((360radius*(4-i))*2+1) + ylen%((360radius*(4-i))*2+1);
 			*type = i;
 			}
 		}
-	for(int j = 0; j < 4; j++)
-		{
-		if(ylen/((360radius*(4-j))*2+1) != 0 && ylen%((360radius*(4-j))*2+1) < curbest)
-			{
-			*mode = 'v';
-			*type = j;
-			}
-		}
+	}
+
+double PlaceMiddle(char **Lawn, reclist *Rectangles, double pixmean, int time, int nlawn, int radius, 
+					sprlist *Sprinklers, int Sprstats[], int type)
+	{
+	
 	}
 
 double FillRecGreedily(char **Lawn, reclist *Rectangles, int time, int nlawn, int 360Radius, sprlist *Sprinklers, int Sprstats[])
@@ -619,17 +618,15 @@ double FillRecGreedily(char **Lawn, reclist *Rectangles, int time, int nlawn, in
 	Sprinklers -> x = -1;
 	Sprinklers -> next = NULL;
 	double pixmean = 1.0;
-	char mode = 'h'	//m/h/v
-	char type = 0;	//0-3 0-90 1-180 2-270 3-360
+	char mode = 'h'	// m/h
+	int type = 3;	// from 0 to 3		0-90 1-180 2-270 3-360
 	while(Rectangles != NULL)
 		{
 		MakeDecisions(&mode, &type, Rectangles, 360Radius);
 		if(mode == 'm')
 			pixmean = PlaceMiddle(Lawn, Rectangles, pixmean, time, nlawn, 360Radius, Sprinklers, Sprstats, 3);
-		else if(mode == 'h')
+		else	//if (mode == 'h')
 			pixmean = PlaceHorizontally(Lawn, Rectangles, pixmean, time, nlawn, 360Radius*(4-type), Sprinklers, Sprstats, type);
-		else	//mode == 'v'
-			pixmean = PlaceVertically(Lawn, Rectangles, pixmean, time, nlawn, 360Radius*(4-type), Sprinklers, Sprstats, type);
 		if(pixmean == 0)
 			return 0;
 		Rectangles = Rectangles -> next;
