@@ -32,6 +32,7 @@ int CreateLawn(FILE *lawnfile, parameters *Param, char **lawn) //obs³uga b³êdów 
         }
         else if (c == emp)
         {
+            Param->nlawn += (Param->pixelsize)*(Param->pixelsize);
             fillSquare(lawn, x, y, 1, Param->pixelsize);
             x++;
         }
@@ -52,6 +53,9 @@ int CreateLawn(FILE *lawnfile, parameters *Param, char **lawn) //obs³uga b³êdów 
 int InitializeParameters(FILE *lawnfile, parameters *Param, int time)
 {
     Param->pixelsize = pxl;
+    Param->nlawn = 0;
+    Param->currentmean = 0;
+    Param->radius360 = 200; //
     char c;
     int x = 0, y = 0; //current positions
     int maxX = maxLawnWidth/Param->pixelsize;
@@ -110,11 +114,11 @@ int InitializeParameters(FILE *lawnfile, parameters *Param, int time)
 
 void fillSquare(char **lawn, int x, int y, char c, int pixel)
 {
-    for (int i = 0; i < Param->pixelsize; i++)
+    for (int i = 0; i < pixel; i++)
     {
-        for (int j = 0; j < Param->pixelsize; j++)
+        for (int j = 0; j < pixel; j++)
         {
-            lawn[x*pixel+i][y*pixel+=j] = c;
+            lawn[x*pixel+i][y*pixel+j] = c;
         }
     }
 }

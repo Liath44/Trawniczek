@@ -14,7 +14,7 @@ typedef struct _parameters
 	int pixelsize; //size of one character in the array
 	int nlawn;	//Number of waterable pixels
 	int time;	//time spent on watering
-	int 360radius;	//radius of 360 sprinkler
+	int radius360;	//radius of 360 sprinkler
 	double currentmean;
 	} parameters;
 
@@ -37,7 +37,7 @@ double CalculateMean(char **Lawn, parameters *Param);
  * char **Lawn - matrix that stores lawn's pixels
  *
  * int type - sprinkler's type (90/180/270/360)
- * 
+ *
  * int time - duration of watering
  *
  * int x, y - sprinkler's coordinates
