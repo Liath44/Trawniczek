@@ -38,4 +38,3 @@ void CreateOutputFile(FILE *output, sprlist *Sprinklers)
         Sprinklers = Sprinklers->next;
     }
 }
-
