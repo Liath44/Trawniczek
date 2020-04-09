@@ -31,6 +31,13 @@ typedef struct _sprlist
 int PutOnList(sprlist *Sprinklers, int type, int x, int y);
 
 /*
+ * Deallocates list of sprinklers
+ * 
+ * sprlist *Sprinklers - first node of sprinklers' list
+ */
+void FreeSprinklers(sprlist *Sprinklers);
+
+/*
  * Creates graphical representation of Lawn
  *
  * FILE *bitmap - output file

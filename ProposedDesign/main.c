@@ -5,7 +5,15 @@
 #include "gardener.h"
 #include "output.h"
 
-void FreeMemory(FILE *lawnfile, char **Lawn, parameters *Param)
+void FreeMemory(sprlist *Sprinklers, FILE *lawnfile, char **Lawn, parameters *Param, FILE *bitmap, FILE *output)
+	{
+	FreeSprinklers(Sprinklers);
+	FreeLawn(lawnfile, Lawn, Param);
+	fclose(bitmap);
+	fclose(output);
+	}
+
+void FreeLawn(FILE *lawnfile, char **Lawn, parameters *Param)
 	{
 	fclose(lawnfile);
 	//(...)
@@ -41,15 +49,16 @@ int main(int argc, char *args[])
 	fclose(lawnfile);
 	if(Lawn == NULL)
 		{
-		FreeMemory(lawnfile, Lawn, &Param);
+		FreeLawn(lawnfile, Lawn, &Param);
 		fprintf(stderr, "Memory allocation error\n");
 		return EXIT_FAILURE;
 		}
 
-	sprlist * Sprinklers;
+	sprlist Sprinklers;
 	if(DoTheJob(Lawn, &Param, &Sprinklers) == 0)
 		{
-		FreeMemory(lawnfile, Lawn, &Param);
+		FreeLawn(lawnfile, Lawn, &Param);
+		FreeSprinklers(&Sprinklers);
 		fprintf(stderr, "The Job could not be done\n");
 		return EXIT_FAILURE;
 		}
@@ -58,21 +67,18 @@ int main(int argc, char *args[])
 	FILE *output = fopen("SPRINKLERSPLACEMENT", "w");
 	if(bitmap == NULL || output == NULL)
 		{
-		FreeMemory(lawnfile, Lawn, &Param);
-		fclose(bitmap);
-		fclose(output);
+		FreeMemory(&Sprinklers, lawnfile, Lawn, &Param, bitmap, output);
 		fprintf(stderr, "Could not open output files\n");
 		return EXIT_FAILURE;
 		}
 	if(CreateBitmap(bitmap, Lawn, &Param) == 0)
 		{
-		FreeMemory(lawnfile, Lawn, &Param);
-		fclose(bitmap);
-		fclose(output);
+		FreeMemory(&Sprinklers, lawnfile, Lawn, &Param, bitmap, output);
 		fprintf(stderr, "Could not create bitmap\n");
 		return EXIT_FAILURE;
 		}
 	CreateOutputFile(output, &Sprinklers);
 
+	FreeMemory(&Sprinklers, lawnfile, Lawn, &Param, bitmap, output);
 	return EXIT_SUCCESS;
 	}
