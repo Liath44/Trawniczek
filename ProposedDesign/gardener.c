@@ -3,7 +3,6 @@
 
 /*
 	TODO:
- - FIX x1, y1, x2, y2
  - IF ENTIRE LAWN IS WALL DO NOTHING BUT NO ERROR (?) 
  - "MERGE" SOME FUNCTIONS
  - IS NULL LAWN CHECKED?
@@ -11,7 +10,6 @@
  - COMMENT DOTHEJOB AND STRUCTURES	
  - FUNCTION FOR SPRSTATS	
  - CHANGU JUMP TO VARIABLE FROM PARAMETERS
- - THINK ABOUT BREAKING PLACEONXAXIS... INTO 4 FUNCTIONS (ONE FOR EACH TYPE)
  - IN FUNCTIONS THAT PLACE MULTIPLE SPRINKLERS - SUM ALL AND THEN DIVIDE
 	TODO:
 */
@@ -536,8 +534,8 @@ int CheckForUpDown2(char **Lawn, int x1, int x2, int y, int xsize, int ysize, re
  */
 int UpDownRectangle(char **Lawn, int x, int y, int xsize, int ysize, reclist *rectangles, reclist *beg)
 	{
-	rectangles -> x1 = x;	//FIX
-	rectangles -> y1 = y;	//FIX
+	rectangles -> x1 = x * JUMP;
+	rectangles -> y1 = y * JUMP;
 	int len = CalcLenRight(Lawn, x, y, xsize);
 	int j = y + 1;
 	//Iterate through proper rows
@@ -547,8 +545,8 @@ int UpDownRectangle(char **Lawn, int x, int y, int xsize, int ysize, reclist *re
 		j++;
 		isend = CheckRow(Lawn, x, j, len, xsize, ysize);
 		}
-	rectangles -> x2 = x + len - 1;	//FIX
-	rectangles -> y2 = j - 1;	//FIX
+	rectangles -> x2 = (x+len-1)*JUMP+JUMP-1;
+	rectangles -> y2 = (j-1)*JUMP+JUMP-1;
 	if(j < ysize)
 		{
 		if(CheckForUpDown(Lawn, x, j, xsize, ysize, len, rectangles, beg) == 0)
@@ -566,8 +564,8 @@ int UpDownRectangle(char **Lawn, int x, int y, int xsize, int ysize, reclist *re
  */ 
 int DownUpRectangle(char **Lawn, int x, int y, int xsize, int ysize, reclist *rectangles, reclist *beg)
 	{
-	rectangles -> x2 = x;	//FIX
-	rectangles -> y2 = y;	//FIX
+	rectangles -> x2 = x*JUMP+JUMP-1;
+	rectangles -> y2 = y*JUMP+JUMP-1;
 	int len = CalcLenLeft(Lawn, x, y);
 	int j = y - 1;
 	//Iterate through proper rows
@@ -577,8 +575,8 @@ int DownUpRectangle(char **Lawn, int x, int y, int xsize, int ysize, reclist *re
 		j--;
 		isend = CheckRow(Lawn, x - len + 1, j, len, xsize, ysize);
 		}
-	rectangles -> x1 = x - len + 1;	//FIX
-	rectangles -> y1 = j + 1;	//FIX
+	rectangles -> x1 = (x-len+1)*JUMP;
+	rectangles -> y1 = (j+1)*JUMP;
 	if(j >= 0)
 		{
 		if(CheckForUpDown2(Lawn, x - len + 1, x, j, xsize, ysize, rectangles, beg) == 0)
@@ -873,8 +871,8 @@ int DoTheJob(char **Lawn, parameters *Param, sprlist *Sprinklers)
 			return 0;
 			}
 		int Sprstats[4] = {0, 0, 0, 0 /* DODAĆ FUNKCJE OBLICZAJĄCE */};
-		double pixmean = FillRecGreedily(Lawn, rectangles, Param->time, Param->nlawn, Param->360radius, Sprinklers, Sprstats)
-		if(pixmean == 0)
+		double pixmean = FillRecGreedily(Lawn, rectangles, Param->time, Param->nlawn, Param->radius360, Sprinklers, Sprstats)
+		if(pixmean == 0.0)
 			{
 			FreeRectangles(rectangles);
 			FreePoints(pivareas);
