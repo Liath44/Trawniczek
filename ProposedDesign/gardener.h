@@ -25,6 +25,15 @@ struct _reclist
 	};
 typedef struct _reclist reclist;
 
+struct _sprstats
+	{
+	int pn90;
+	int pn180;
+	int pn270;
+	int pn360;
+	};
+typedef struct _sprstats sprstats;
+
 /*
  * Places sprinklers on lawn in order to water it
  * 

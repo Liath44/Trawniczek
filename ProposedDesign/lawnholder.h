@@ -12,6 +12,7 @@ typedef struct _parameters
 	int xsize;
 	int ysize;
 	int pixelsize; //size of one character in the array
+	int nlawn;	//Number of waterable pixels
 	int time;	//time spent on watering
 	int 360radius;	//radius of 360 sprinkler
 	double currentmean;
@@ -35,16 +36,20 @@ double CalculateMean(char **Lawn, parameters *Param);
  *
  * char **Lawn - matrix that stores lawn's pixels
  *
- * short type - sprinkler's type (90/180/270/360)
+ * int type - sprinkler's type (90/180/270/360)
+ * 
+ * int time - duration of watering
  *
- * short x, y - sprinkler's coordinates
+ * int x, y - sprinkler's coordinates
  *
- * double deg - degree between OX and circular's segment "arm" -
+ * int deg - degree between OX and circular's segment "arm" -
  * the one that is nearer OX when circular segment is placed
  * with rounded side upwards
  *
  * sprlist *Sprinklers - list of already placed sprinklers
+ *
+ * Returns 0 on failure
  */
-void PutSprinkler(char **Lawn, int type, int x, int y, double deg, sprlist *Sprinklers);
+int PutSprinkler(char **Lawn, int type, int time, int x, int y, int deg, sprlist *Sprinklers);
 
 #endif
