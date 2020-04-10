@@ -10,14 +10,14 @@ int main(int argc, char ** args)
 		fprintf(stderr, "No input file.\n");
 		return EXIT_FAILURE;
         }
-    parameters Param;
-	InitializeParameters(lawnfile, &Param,  argc, args);
-	FILE *lawnfile = fopen(args[1], "r");
-	if(lawnfile == NULL)
+    FILE *lawnfile = fopen(args[1], "r");
+    if(lawnfile == NULL)
 		{
 		fprintf(stderr, "Couldn't open input file.\n");
 		return EXIT_FAILURE;
 		}
+    parameters Param;
+	InitializeParameters(lawnfile, &Param, argc, args);
     char **Lawn;
 	int errCode;
 	errCode = CreateLawn(lawnfile, &Param, &Lawn);
