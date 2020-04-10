@@ -1,9 +1,14 @@
 #include "input.h"
+
+/*
+MACROS ARE DEFINED IN INPUT.H
+
 #define maxLawnWidth 8000
 #define maxLawnHeigh 4000
 #define emp '-' //symbol of the empty space
 #define blk 'x' //symbol of the blocked space
 #define pxl 100 //size of one square
+*/
 
 int CreateLawn(FILE *lawnfile, parameters *Param, char **lawn) //obs³uga b³êdów do ogarniêcia
 {

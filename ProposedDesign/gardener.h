@@ -1,11 +1,13 @@
 #ifndef GARDENER
 #define GARDENER
 
-#define JUMP 100
-
 #include <stdlib.h>
 #include "lawnholder.h"
 #include "output.h"
+#include "input.h"
+
+//Macro pxl is defined in input.h
+#define JUMP pxl
 
 struct _pointlist
 	{

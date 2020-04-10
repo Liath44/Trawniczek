@@ -1,40 +1,14 @@
-#include "gardener.h"
 //stdlib, lawnholder, output
+#include "gardener.h"
 
 /*
 	TODO:
- - IF ENTIRE LAWN IS WALL DO NOTHING BUT NO ERROR (?) 
- - "MERGE" SOME FUNCTIONS
- - IS NULL LAWN CHECKED?
- - CHANGE STRUCT'S NAME TO CAPS LOCK	
- - COMMENT DOTHEJOB AND STRUCTURES	
+ - "MERGE" SOME FUNCTIONS	
+ - COMMENT & EDIT COMMENTS	
  - FUNCTION FOR SPRSTATS	
- - CHANGU JUMP TO VARIABLE FROM PARAMETERS
- - CHANGE MAKEDECISINOS(...)
- - IN FUNCTIONS THAT PLACE MULTIPLE SPRINKLERS - SUM ALL AND THEN DIVIDE
  - IS TURNING (TO MAKE CIRCLES OUT OF THEM) TYPES 1 and 0 BENEFICIAL
  - ADDITIONAL 360 IF TYPE 2 IS ODD
 	TODO:
-*/
-
-/*
-struct _pointlist
-	{
-	int x;
-	int y;
-	struct _pointlist *next;
-	};
-typedef struct _pointlist pointlist;
-
-struct _reclist
-	{
-	int x1;
-	int y1;
-	int x2;
-	int y2;
-	struct _reclist *next;
-	}
-typedef struct _reclist reclist;
 */
 
 /*
@@ -76,23 +50,23 @@ void SignAreaJump(char **Lawn, int xsize, int ysize, int i, int j)
  */
 pointlist *NewPoint(int x, int y, pointlist *next)
 	{
-	pointlist *outcome = malloc(sizeof(*outcome));
-	if(outcome == NULL)
+	pointlist *Outcome = malloc(sizeof(*Outcome));
+	if(Outcome == NULL)
 		return NULL;
-	outcome -> x = x;
-	outcome -> y = y;
-	outcome -> next = next;
-	return outcome;
+	Outcome -> x = x;
+	Outcome -> y = y;
+	Outcome -> next = next;
+	return Outcome;
 	}
 
-void FreePoints(pointlist *point)
+void FreePoints(pointlist *Point)
 	{
-	pointlist *piv;
-	while(point != NULL)
+	pointlist *Piv;
+	while(Point != NULL)
 		{
-		piv = point -> next;
-		free(point);
-		point = piv;
+		Piv = Point -> next;
+		free(Point);
+		Point = Piv;
 		}
 	}
 
@@ -104,7 +78,7 @@ void FreePoints(pointlist *point)
  */
 pointlist *FindAreas(char **Lawn, int xsize, int ysize)
 	{
-	pointlist *ret = NULL;
+	pointlist *Ret = NULL;
 	for(int j = 0; j < ysize; j++)
 		{
 		for(int i = 0; i < xsize; i++)
@@ -112,30 +86,30 @@ pointlist *FindAreas(char **Lawn, int xsize, int ysize)
 			if(*(*(Lawn+JUMP*i)+JUMP*j) == 1)
 				{
 				//Found new area
-				pointlist *piv = NewPoint(i, j, ret);
-				if(piv == NULL)
+				pointlist *Piv = NewPoint(i, j, Ret);
+				if(Piv == NULL)
 					{
-					FreePoints(ret);
+					FreePoints(Ret);
 					return NULL;
 					}
-				ret = piv;
+				Ret = Piv;
 				//Mark area by making it's pixels negative
 				SignAreaJump(Lawn, xsize, ysize, i, j);
 				}
 			}
 		}
 	ResetSignsJump(Lawn, xsize, ysize);
-	return ret;
+	return Ret;
 	}
 
-void FreeRectangles(reclist *rec)
+void FreeRectangles(reclist *Rec)
 	{
-	reclist *piv;
+	reclist *Piv;
 	while(rec != NULL)
 		{
-		piv = rec -> next;
-		free(rec);
-		rec = piv;
+		Piv = Rec -> next;
+		free(Rec);
+		Rec = Piv;
 		}
 	}
 /*
@@ -199,32 +173,32 @@ int CheckRow(char **Lawn, int x, int y, int len, int xsize, int ysize)
  * Returns created rectangle on success
  * Returns NULL on failure
  */
-reclist *InitNewRectangle(reclist *rectangles)
+reclist *InitNewRectangle(reclist *Rectangles)
 	{
-	reclist *piv = malloc(sizeof(*piv));
-	if(piv == NULL)
+	reclist *Piv = malloc(sizeof(*Piv));
+	if(Piv == NULL)
 		return NULL;
-	while(rectangles -> next != NULL)
-		rectangles = rectangles -> next;
-	piv -> next = NULL;
-	rectangles -> next = piv;
-	return piv;
+	while(Rectangles -> next != NULL)
+		Rectangles = Rectangles -> next;
+	Piv -> next = NULL;
+	Rectangles -> next = Piv;
+	return Piv;
 	}
 
 /*
  * Checks whether point (x, y) is inside one
- * of rectangles from reclist *rl
+ * of rectangles from reclist *Rl
  * 
  * Returns 1 if true
  * Returns 0 otherwise
  */
-int IsOnReclist(int x, int y, reclist *rl)
+int IsOnReclist(int x, int y, reclist *Rl)
 	{
-	while(rl != NULL)
+	while(Rl != NULL)
 		{
-		if(x >= rl->x1 && y >= rl->y1 && x <= rl->x2 && y <= rl->y2)
+		if(x >= Rl->x1 && y >= Rl->y1 && x <= Rl->x2 && y <= Rl->y2)
 			return 1;
-		rl = rl -> next;
+		Rl = Rl -> next;
 		}
 	return 0;
 	}
@@ -246,13 +220,13 @@ int IsOnReclist(int x, int y, reclist *rl)
  * 
  * int len - length of subject rectangle
  * 
- * reclist *rectangles - points to a certain part 
+ * reclist *Rectangles - points to a certain part 
  * of list of already found rectangles
  * 
  * Returns 0 on memory allocation error
  * Returns 1 otherwise
  */
-int CheckForUpDown(char **Lawn, int x, int j, int xsize, int ysize, int len, reclist *rectangles, reclist *beg)
+int CheckForUpDown(char **Lawn, int x, int j, int xsize, int ysize, int len, reclist *Rectangles, reclist *Beg)
 	{
 	//x coordinate of left-down corner
 	int i1 = x + len - 1;
@@ -262,12 +236,12 @@ int CheckForUpDown(char **Lawn, int x, int j, int xsize, int ysize, int len, rec
 		//New rectangle when it's left wall is found
 		if(*(*(Lawn+JUMP*i1)+JUMP*j) != 0 && (i1 == 0 || *(*(Lawn+JUMP*(i1-1))+JUMP*j) == 0))
 			{
-			if(IsOnReclist(i1, j, beg) == 0)
+			if(IsOnReclist(i1, j, Beg) == 0)
 				{
-				rectangles = InitNewRectangle(rectangles);
-				if(rectangles == NULL)
+				Rectangles = InitNewRectangle(Rectangles);
+				if(Rectangles == NULL)
 					return 0;
-				if(UpDownRectangle(Lawn, i1, j, xsize, ysize, rectangles, beg) == 0)
+				if(UpDownRectangle(Lawn, i1, j, xsize, ysize, Rectangles, Beg) == 0)
 					return 0;
 				}
 			}
@@ -282,12 +256,12 @@ int CheckForUpDown(char **Lawn, int x, int j, int xsize, int ysize, int len, rec
 		while(i1 >= 0 && *(*(Lawn+JUMP*i1)+JUMP*j) != 0)
 			--i1;
 		++i1;
-		if(IsOnReclist(i1, j, beg) == 0)
+		if(IsOnReclist(i1, j, Beg) == 0)
 			{
-			rectangles = InitNewRectangle(rectangles);
-			if(rectangles == NULL)
+			Rectangles = InitNewRectangle(Rectangles);
+			if(Rectangles == NULL)
 				return 0;
-			if(UpDownRectangle(Lawn, i1, j, xsize, ysize, rectangles, beg) == 0)
+			if(UpDownRectangle(Lawn, i1, j, xsize, ysize, Rectangles, Beg) == 0)
 				return 0;
 			}
 		}
@@ -298,7 +272,7 @@ int CheckForUpDown(char **Lawn, int x, int j, int xsize, int ysize, int len, rec
  * Analogical to CheckForDownUp but called
  * by DownUpRectangle
  */
-int CheckForDownUp2(char **Lawn, int x, int j, int xsize, int ysize, int len, reclist *rectangles, reclist *beg)
+int CheckForDownUp2(char **Lawn, int x, int j, int xsize, int ysize, int len, reclist *Rectangles, reclist *Beg)
 	{
 	//x coordinate of right-up corner
 	int i1 = x - len + 1;
@@ -308,12 +282,12 @@ int CheckForDownUp2(char **Lawn, int x, int j, int xsize, int ysize, int len, re
 		//New rectangle when it's right wall is found
 		if(*(*(Lawn+JUMP*i1)+JUMP*j) != 0 && (i1 == xsize-1 || *(*(Lawn+JUMP*(i1+1))+JUMP*j) == 0))
 			{
-			if(IsOnReclist(i1, j, beg) == 0)
+			if(IsOnReclist(i1, j, Beg) == 0)
 				{
-				rectangles = InitNewRectangle(rectangles);
-				if(rectangles == NULL)
+				Rectangles = InitNewRectangle(Rectangles);
+				if(Rectangles == NULL)
 					return 0;
-				if(DownUpRectangle(Lawn, i1, j, xsize, ysize, rectangles, beg) == 0)
+				if(DownUpRectangle(Lawn, i1, j, xsize, ysize, Rectangles, Beg) == 0)
 					return 0;
 				}
 			}
@@ -328,12 +302,12 @@ int CheckForDownUp2(char **Lawn, int x, int j, int xsize, int ysize, int len, re
 		while(i1 < xsize && *(*(Lawn+JUMP*i1)+JUMP*j) != 0)
 			++i1;
 		--i1;
-		if(IsOnReclist(i1, j, beg) == 0)
+		if(IsOnReclist(i1, j, Beg) == 0)
 			{
-			rectangles = InitNewRectangle(rectangles);
-			if(rectangles == NULL)
+			Rectangles = InitNewRectangle(Rectangles);
+			if(Rectangles == NULL)
 				return 0;
-			if(DownUpRectangle(Lawn, i1, j, xsize, ysize, rectangles, beg) == 0)
+			if(DownUpRectangle(Lawn, i1, j, xsize, ysize, Rectangles, Beg) == 0)
 				return 0;
 			}
 		}
@@ -358,13 +332,13 @@ int CheckForDownUp2(char **Lawn, int x, int j, int xsize, int ysize, int len, re
  * 
  * int xsize, ysize - Lawn's size
  * 
- * reclist *rectangles - points to a certain part 
+ * reclist *Rectangles - points to a certain part 
  * of list of already found rectangles
  * 
  * Returns 0 on memory allocation error
  * Returns 1 otherwise
  */
-int CheckForDownUp(char **Lawn, int x1, int x2, int y, int xsize, int ysize, reclist *rectangles, reclist *beg)
+int CheckForDownUp(char **Lawn, int x1, int x2, int y, int xsize, int ysize, reclist *Rectangles, reclist *Beg)
 	{
 	//Check for DownUps to the left of the rectangle 
 	int i = x1 - 1;
@@ -376,12 +350,12 @@ int CheckForDownUp(char **Lawn, int x1, int x2, int y, int xsize, int ysize, rec
 			//If pixel above lawn pixel is also lawn
 			if(*(*(Lawn+JUMP*i)+JUMP*(y-1)) != 0)
 				{
-				if(IsOnReclist(i, y-1, beg) == 0)
+				if(IsOnReclist(i, y-1, Beg) == 0)
 					{
-					rectangles = InitNewRectangle(rectangles);
-					if(rectangles == NULL)
+					Rectangles = InitNewRectangle(Rectangles);
+					if(Rectangles == NULL)
 						return 0;
-					if(DownUpRectangle(Lawn, i, y-1, xsize, ysize, rectangles, beg) == 0)
+					if(DownUpRectangle(Lawn, i, y-1, xsize, ysize, Rectangles, Beg) == 0)
 						return 0;
 					}
 				//Check below new rectangle if still lawn
@@ -413,12 +387,12 @@ int CheckForDownUp(char **Lawn, int x1, int x2, int y, int xsize, int ysize, rec
 				while(newrec < xsize && *(*(Lawn+JUMP*newrec)+JUMP*(y-1)) != 0)
 					++newrec;
 				--newrec;
-				if(IsOnReclist(newrec, y-1, beg) == 0)
+				if(IsOnReclist(newrec, y-1, Beg) == 0)
 					{
-					rectangles = InitNewRectangle(rectangles);
-					if(rectangles == NULL)
+					Rectangles = InitNewRectangle(Rectangles);
+					if(Rectangles == NULL)
 						return 0;
-					if(DownUpRectangle(Lawn, newrec, y-1, xsize, ysize, rectangles, beg) == 0)
+					if(DownUpRectangle(Lawn, newrec, y-1, xsize, ysize, Rectangles, Beg) == 0)
 						return 0;
 					}
 				//Check below new rectangle if still lawn
@@ -441,7 +415,7 @@ int CheckForDownUp(char **Lawn, int x1, int x2, int y, int xsize, int ysize, rec
  * Analogical to CheckForUpDown but called
  * by DownUpRectangle
  */
-int CheckForUpDown2(char **Lawn, int x1, int x2, int y, int xsize, int ysize, reclist *rectangles, reclist *beg)
+int CheckForUpDown2(char **Lawn, int x1, int x2, int y, int xsize, int ysize, reclist *Rectangles, reclist *Beg)
 	{
 	//Check for DownUps to the left of the rectangle
 	int i = x1 - 1;
@@ -458,12 +432,12 @@ int CheckForUpDown2(char **Lawn, int x1, int x2, int y, int xsize, int ysize, re
 				while(newrec >= 0 && *(*(Lawn+JUMP*newrec)+JUMP*(y+1)) != 0)
 					--newrec;
 				++newrec;
-				if(IsOnReclist(newrec, y+1, beg) == 0)
+				if(IsOnReclist(newrec, y+1, Beg) == 0)
 					{
-					rectangles = InitNewRectangle(rectangles);
-					if(rectangles == NULL)
+					Rectangles = InitNewRectangle(Rectangles);
+					if(Rectangles == NULL)
 						return 0;
-					if(UpDownRectangle(Lawn, newrec, y+1, xsize, ysize, rectangles, beg) == 0)
+					if(UpDownRectangle(Lawn, newrec, y+1, xsize, ysize, Rectangles, Beg) == 0)
 						return 0;
 					}
 				//Check above new rectangle if still lawn
@@ -489,12 +463,12 @@ int CheckForUpDown2(char **Lawn, int x1, int x2, int y, int xsize, int ysize, re
 			//If pixel below is also lawn
 			if(*(*(Lawn+JUMP*j)+JUMP*(y+1)) != 0)
 				{
-				if(IsOnReclist(j, y+1, beg) == 0)
+				if(IsOnReclist(j, y+1, Beg) == 0)
 					{
-					rectangles = InitNewRectangle(rectangles);
-					if(rectangles == NULL)
+					Rectangles = InitNewRectangle(Rectangles);
+					if(Rectangles == NULL)
 						return 0;
-					if(UpDownRectangle(Lawn, j, y+1, xsize, ysize, rectangles, beg) == 0)
+					if(UpDownRectangle(Lawn, j, y+1, xsize, ysize, Rectangles, Beg) == 0)
 						return 0;
 					}
 				//Check above new rectangle if still lawn
@@ -529,16 +503,16 @@ int CheckForUpDown2(char **Lawn, int x1, int x2, int y, int xsize, int ysize, re
  * 
  * int xsize, ysize - Lawn's size
  * 
- * reclist *rectangles - stores to-be-found 
+ * reclist *Rectangles - stores to-be-found 
  * parameters of a rectangle
  * 
  * Returns 0 on memory allocation errors
  * Returns 1 otherwise
  */
-int UpDownRectangle(char **Lawn, int x, int y, int xsize, int ysize, reclist *rectangles, reclist *beg)
+int UpDownRectangle(char **Lawn, int x, int y, int xsize, int ysize, reclist *Rectangles, reclist *Beg)
 	{
-	rectangles -> x1 = x * JUMP;
-	rectangles -> y1 = y * JUMP;
+	Rectangles -> x1 = x * JUMP;
+	Rectangles -> y1 = y * JUMP;
 	int len = CalcLenRight(Lawn, x, y, xsize);
 	int j = y + 1;
 	//Iterate through proper rows
@@ -548,13 +522,13 @@ int UpDownRectangle(char **Lawn, int x, int y, int xsize, int ysize, reclist *re
 		j++;
 		isend = CheckRow(Lawn, x, j, len, xsize, ysize);
 		}
-	rectangles -> x2 = (x+len-1)*JUMP+JUMP-1;
-	rectangles -> y2 = (j-1)*JUMP+JUMP-1;
+	Rectangles -> x2 = (x+len-1)*JUMP+JUMP-1;
+	Rectangles -> y2 = (j-1)*JUMP+JUMP-1;
 	if(j < ysize)
 		{
-		if(CheckForUpDown(Lawn, x, j, xsize, ysize, len, rectangles, beg) == 0)
+		if(CheckForUpDown(Lawn, x, j, xsize, ysize, len, Rectangles, Beg) == 0)
 			return 0;
-		if(CheckForDownUp(Lawn, x, x + len - 1, j, xsize, ysize, rectangles, beg) == 0)
+		if(CheckForDownUp(Lawn, x, x + len - 1, j, xsize, ysize, Rectangles, Beg) == 0)
 			return 0;
 		}
 	return 1;
@@ -565,10 +539,10 @@ int UpDownRectangle(char **Lawn, int x, int y, int xsize, int ysize, reclist *re
  * search is done from down-right corner 
  * to up-left corner
  */ 
-int DownUpRectangle(char **Lawn, int x, int y, int xsize, int ysize, reclist *rectangles, reclist *beg)
+int DownUpRectangle(char **Lawn, int x, int y, int xsize, int ysize, reclist *Rectangles, reclist *Beg)
 	{
-	rectangles -> x2 = x*JUMP+JUMP-1;
-	rectangles -> y2 = y*JUMP+JUMP-1;
+	Rectangles -> x2 = x*JUMP+JUMP-1;
+	Rectangles -> y2 = y*JUMP+JUMP-1;
 	int len = CalcLenLeft(Lawn, x, y);
 	int j = y - 1;
 	//Iterate through proper rows
@@ -578,13 +552,13 @@ int DownUpRectangle(char **Lawn, int x, int y, int xsize, int ysize, reclist *re
 		j--;
 		isend = CheckRow(Lawn, x - len + 1, j, len, xsize, ysize);
 		}
-	rectangles -> x1 = (x-len+1)*JUMP;
-	rectangles -> y1 = (j+1)*JUMP;
+	Rectangles -> x1 = (x-len+1)*JUMP;
+	Rectangles -> y1 = (j+1)*JUMP;
 	if(j >= 0)
 		{
-		if(CheckForUpDown2(Lawn, x - len + 1, x, j, xsize, ysize, rectangles, beg) == 0)
+		if(CheckForUpDown2(Lawn, x - len + 1, x, j, xsize, ysize, Rectangles, Beg) == 0)
 			return 0;
-		if(CheckForDownUp2(Lawn, x, j, xsize, ysize, len, rectangles, beg) == 0)
+		if(CheckForDownUp2(Lawn, x, j, xsize, ysize, len, Rectangles, Beg) == 0)
 			return 0;
 		}
 	return 1;
@@ -602,11 +576,23 @@ void MakeDecisions(char *mode, int *type, reclist *Rectangles, int radius)
 	int curbest = xlen + ylen;
 	for(int i = 3; i >= 0; --i)
 		{
-		if(xlen >= ((radius*(4-i))*2+1) && ylen >= ((radius*(4-i))*2+1) && 
-		xlen%((radius*(4-i))*2+1) + ylen%((radius*(4-i))*2+1) <= curbest)
+		if(i != 1)
 			{
-			curbest = xlen%((radius*(4-i))*2+1) + ylen%((radius*(4-i))*2+1);
-			*type = i;
+			if(xlen >= ((radius*(4-i))*2+1) && ylen >= ((radius*(4-i))*2+1) && 
+			xlen%((radius*(4-i))*2+1) + ylen%((radius*(4-i))*2+1) <= curbest)
+				{
+				curbest = xlen%((radius*(4-i))*2+1) + ylen%((radius*(4-i))*2+1);
+				*type = i;
+				}
+			}
+		else
+			{
+			if(xlen >= ((radius*(4-i))*2+1) && ylen >= (radius*(4-i)+1) && 
+			xlen%((radius*(4-i))*2+1) + ylen%(radius*(4-i)+1) <= curbest)
+				{
+				curbest = xlen%((radius*(4-i))*2+1) + ylen%(radius*(4-i)+1);
+				*type = i;
+				}
 			}
 		}
 	}
@@ -653,7 +639,7 @@ double PlaceOnYAxis(char **Lawn, reclist *R, double pixmean, int time, double nl
 				if(PutSprinkler(Lawn, 360, time, x, i, 0, Sprinklers) == 0)
 					return 0.0;
 				}
-			addedval = Sprstats[type]*time*3;
+			addedval += Sprstats[type]*time*3;
 			}
 		else if(type == 2)
 			{
@@ -665,17 +651,16 @@ double PlaceOnYAxis(char **Lawn, reclist *R, double pixmean, int time, double nl
 				deg = 0;
 			x += shift;
 			shift *= -1;
-			addedval = Sprstats[type]*time*2;
+			addedval += Sprstats[type]*time*2;
 			}
 		else
 			{
 			if(PutSprinkler(Lawn, 90+90*type, time, x, i, 0, Sprinklers) == 0)
 					return 0.0;
-			addedval = Sprstats[type]*time*(4-type);
+			addedval += Sprstats[type]*time*(4-type);
 			}
-		pixmean += addedval/nlawn;
 		}
-	return pixmean;
+	return pixmean+addedval/nlawn;;
 	}
 
 double PlaceOnXAxis(char **Lawn, reclist *R, double pixmean, int time, double nlawn, int radius, 
@@ -709,7 +694,7 @@ double PlaceOnXAxis(char **Lawn, reclist *R, double pixmean, int time, double nl
 				if(PutSprinkler(Lawn, 360, time, i, y, 0, Sprinklers) == 0)
 					return 0.0;
 				}
-			addedval = Sprstats[type]*time*3;
+			addedval += Sprstats[type]*time*3;
 			}
 		else if(type == 2)
 			{
@@ -721,17 +706,16 @@ double PlaceOnXAxis(char **Lawn, reclist *R, double pixmean, int time, double nl
 				deg = 0;
 			y += shift;
 			shift *= -1;
-			addedval = Sprstats[type]*time*2;
+			addedval += Sprstats[type]*time*2;
 			}
 		else
 			{
 			if(PutSprinkler(Lawn, 90+90*type, time, i, y, 0, Sprinklers) == 0)
 					return 0.0;
-			addedval = Sprstats[type]*time*(4-type);
+			addedval += Sprstats[type]*time*(4-type);
 			}
-		pixmean += addedval/nlawn;
 		}
-	return pixmean;
+	return pixmean+addedval/nlawn;
 	}
 
 int PlaceSprRow(double *addedval, int y, char **Lawn, reclist *R, int time, double nlawn, 
@@ -780,7 +764,7 @@ int PlaceSprRow(double *addedval, int y, char **Lawn, reclist *R, int time, doub
 					return 0;
 			piv = Sprstats[type]*time*(4-type);
 			}
-		*addedval += piv/nlawn;
+		*addedval += piv;
 		}
 	return 1;
 	}
@@ -805,9 +789,8 @@ double PlaceInRectangle(char **Lawn, reclist *R, double pixmean, int time, doubl
 		{
 		if(PlaceSprRow(&addedval, i, Lawn, R, time, nlawn, radius, Sprinklers, Sprstats, type) == 0)
 			return 0.0;
-		pixmean += addedval/nlawn;
 		}
-	return pixmean;
+	return pixmean+addedval/nlawn;
 	}
 
 double PlaceSprGreedily(char **Lawn, reclist *R, double pixmean, int time, double nlawn, int radius, 
@@ -844,7 +827,7 @@ double FillRecGreedily(char **Lawn, reclist *Rectangles, int time, int nlawn, in
 		else	//if (mode == 'h')
 			pixmean = PlaceSprGreedily(Lawn, Rectangles, pixmean, time, nlawn, radius*(4-type), Sprinklers, Sprstats, type);
 		if(pixmean == 0)
-			return 0;
+			return 0.0;
 		Rectangles = Rectangles -> next;
 		}
 	return pixmean;
@@ -853,38 +836,38 @@ double FillRecGreedily(char **Lawn, reclist *Rectangles, int time, int nlawn, in
 int DoTheJob(char **Lawn, parameters *Param, sprlist *Sprinklers)
 	{
 	int errcode = 1;
-	pointlist *areas = FindAreas(Lawn, Param->xsize/JUMP, Param->ysize/JUMP);
-	pointlist *pivareas = areas;
-	if(areas == NULL)
+	pointlist *Areas = FindAreas(Lawn, Param->xsize/JUMP, Param->ysize/JUMP);
+	pointlist *PivAreas = Areas;
+	if(Areas == NULL)
 		return 0;
-	while(areas != NULL)
+	while(Areas != NULL)
 		{
-		reclist *rectangles = malloc(sizeof(*rectangles));
-		if(rectangles == NULL)
+		reclist *Rectangles = malloc(sizeof(*Rectangles));
+		if(Rectangles == NULL)
 			{
-			FreePoints(pivareas);
+			FreePoints(PivAreas);
 			return 0;
 			}
-		rectangles -> next = NULL;
-		errcode = UpDownRectangle(Lawn, areas->x, areas->y, Param->xsize/JUMP, Param->ysize/JUMP, rectangles, rectangles);
+		Rectangles -> next = NULL;
+		errcode = UpDownRectangle(Lawn, Areas->x, Areas->y, Param->xsize/JUMP, Param->ysize/JUMP, Rectangles, Rectangles);
 		if(errcode == 0)
 			{
-			FreeRectangles(rectangles);
-			FreePoints(pivareas);
+			FreeRectangles(Rectangles);
+			FreePoints(PivAreas);
 			return 0;
 			}
 		int Sprstats[4] = {0, 0, 0, 0 /* DODAĆ FUNKCJE OBLICZAJĄCE */};
-		double pixmean = FillRecGreedily(Lawn, rectangles, Param->time, Param->nlawn, Param->radius360, Sprinklers, Sprstats);
+		double pixmean = FillRecGreedily(Lawn, Rectangles, Param->time, Param->nlawn, Param->radius360, Sprinklers, Sprstats);
 		if(pixmean == 0.0)
 			{
-			FreeRectangles(rectangles);
-			FreePoints(pivareas);
+			FreeRectangles(Rectangles);
+			FreePoints(PivAreas);
 			return 0;
 			}
 		///////////////
-		FreeRectangles(rectangles);
-		areas = areas -> next;
+		FreeRectangles(Rectangles);
+		Areas = Areas -> next;
 		}
-	FreePoints(pivareas);
+	FreePoints(PivAreas);
 	return 1;	
 	}
