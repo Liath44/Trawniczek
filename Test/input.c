@@ -7,7 +7,7 @@
 
 int CreateLawn(FILE *lawnfile, parameters *P, char ***lawn)
 {
-    char ** temp_lawn = malloc(P->ysize * sizeof *(temp_lawn));
+    char ** temp_lawn = (char **)malloc(P->ysize * sizeof *(temp_lawn));
     if (temp_lawn == NULL)
     {
         fprintf(stderr, "Could not allocate memory [Start].\n");
@@ -15,7 +15,7 @@ int CreateLawn(FILE *lawnfile, parameters *P, char ***lawn)
     }
     for (int i = 0; i < P->ysize; i++)
     {
-        temp_lawn[i] = malloc(P->xsize * sizeof *(*(temp_lawn)));
+        temp_lawn[i] = (char *)malloc(P->xsize * sizeof *(*(temp_lawn)));
         if (temp_lawn[i] == NULL)
         {
             fprintf(stderr, "Could not allocate memory [%d].\n", i);
@@ -53,19 +53,19 @@ int CreateLawn(FILE *lawnfile, parameters *P, char ***lawn)
         }
         else if (c == emp)
         {
-            Param->nlawn += (Param->pixelsize)*(Param->pixelsize);
-            fillSquare(lawn, x++, y, 1, P->pixelsize);
+            P->nlawn += (P->pixelsize)*(P->pixelsize);
+            fillSquare(*lawn, x++, y, 1, P->pixelsize);
             if (x > P->xsize/P->pixelsize)
             {
-                BiggerLawn(&P, &lawn);
+                BiggerLawn(P, lawn);
             }
         }
         else if (c == blk)
         {
-            fillSquare(lawn, x++, y, 0, P->pixelsize);
+            fillSquare(*lawn, x++, y, 0, P->pixelsize);
             if (x > P->xsize/P->pixelsize)
             {
-                BiggerLawn(&P, &lawn);
+                BiggerLawn(P, lawn);
             }
         }
         else
@@ -86,7 +86,7 @@ int CreateLawn(FILE *lawnfile, parameters *P, char ***lawn)
         return -100*y-1;
     }
     if (x == maxX) y++;
-    ReduceLawn(&P, &lawn, maxX, y);
+    ReduceLawn(P, lawn, maxX, y);
     return 0;
 }
 
@@ -96,8 +96,8 @@ void InitializeParameters(FILE *lawnfile, parameters *P, int argc, char ** args)
     P->xsize = 8 * P->pixelsize;
     P->ysize = 4 * P->pixelsize;
     P->nlawn = 0;
-    P->time = argc > 2 ? args[2] : 100;
-    P->radius360 = argc > 3 ? args[3] : 200;
+    P->time = argc > 2 ? atoi(args[2]) : 100;
+    P->radius360 = argc > 3 ? atoi(args[3]) : 200;
     P->currentmean = 0;
 }
 
@@ -114,9 +114,9 @@ void fillSquare(char **lawn, int x, int y, char c, int pixel)
 
 int BiggerLawn(parameters *P, char ***lawn)
 {
-    int temp_ysize = min(2*P->ysize, maxLawnHeigh); //new number of rows
-    int temp_xsize = min(2*P->xsize, maxLawnWidth); //new number of columns
-    char ** temp_lawn = realloc(*lawn, temp_ysize * sizeof *(temp_lawn));
+    int temp_ysize = 2*P->ysize < maxLawnHeigh ? 2*P->ysize : maxLawnHeigh; //new number of rows
+    int temp_xsize = 2*P->xsize < maxLawnWidth ? 2*P->xsize : maxLawnWidth; //new number of columns
+    char ** temp_lawn = (char **) realloc(*lawn, temp_ysize * sizeof *(temp_lawn));
     if (temp_lawn == NULL)
     {
         fprintf(stderr, "Could not allocate memory [realloc].\n");
@@ -125,7 +125,7 @@ int BiggerLawn(parameters *P, char ***lawn)
     *lawn = temp_lawn;
     for (int i = 0; i < P->ysize; i++)
     {
-        char * temp_row = realloc(*lawn[i], temp_xsize * sizeof *(temp_row));
+        char * temp_row = (char *) realloc(*lawn[i], temp_xsize * sizeof *(temp_row));
         if (temp_row == NULL)
         {
             fprintf(stderr, "Could not allocate memory [realloc - %d].\n", i);
@@ -135,7 +135,7 @@ int BiggerLawn(parameters *P, char ***lawn)
     }
     for (int i = P->ysize; i < temp_ysize; i++)
     {
-        char * temp_row = malloc(temp_xsize * sizeof *(temp_row));
+        char * temp_row = (char *) malloc(temp_xsize * sizeof *(temp_row));
         if (temp_row == NULL)
         {
             fprintf(stderr, "Could not allocate memory [malloc - %d].\n", i);
@@ -155,7 +155,7 @@ int ReduceLawn(parameters *P, char ***lawn, int x, int y)
     {
         free(*lawn[i]);
     }
-    char ** temp_lawn = realloc(*lawn, temp_ysize * sizeof *(temp_lawn));
+    char ** temp_lawn = (char **) realloc(*lawn, temp_ysize * sizeof *(temp_lawn));
     if (temp_lawn == NULL)
     {
         fprintf(stderr, "Could not allocate memory [realloc].\n");
@@ -164,7 +164,7 @@ int ReduceLawn(parameters *P, char ***lawn, int x, int y)
     *lawn = temp_lawn;
     for (int i = 0; i < temp_ysize; i++)
     {
-        char * temp_row = realloc(*lawn[i], temp_xsize * sizeof *(temp_row));
+        char * temp_row = (char *) realloc(*lawn[i], temp_xsize * sizeof *(temp_row));
         if (temp_row == NULL)
         {
             fprintf(stderr, "Could not allocate memory [malloc - %d].\n", i);
