@@ -63,4 +63,16 @@ void fillSquare(char **lawn, int x, int y, char c, int pixel);
  */
 int BiggerLawn(parameters *Param, char ***lawn)
 
+/*
+ * Reduces the size of the matrix so there are not unused spaces
+ *
+ * parameters *Param - points to structure that holds
+ * lawn's parameters. Function updates fields of this structure
+ *
+ * char ***lawn - points to the matrix that is the representation
+ * of the lawn
+ *
+ */
+int ReduceLawn(parameters *Param, char ***lawn)
+
 #endif
