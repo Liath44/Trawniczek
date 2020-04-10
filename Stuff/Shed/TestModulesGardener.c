@@ -41,7 +41,12 @@ void PrintLawn(char **Lawn, int xsize, int ysize)
 	for(int i = 0; i < ysize; i++)
 		{
 		for(int j = 0; j < xsize; j++)
-			printf("%d", *(*(Lawn+JUMP*j)+JUMP*i));
+			{
+			if(*(*(Lawn+JUMP*j)+JUMP*i) != 0)
+				printf("%d", *(*(Lawn+JUMP*j)+JUMP*i));
+			else
+				printf("%d", *(*(Lawn+JUMP*j)+JUMP*i));
+			}
 		printf("\n");
 		}
 	printf("\n");
@@ -59,13 +64,49 @@ void PrintPoints(pointlist *pts)
 		}
 	}
 
+void Draw8(char **Lawn, int xc, int yc, int x, int y)
+	{
+	//*(*(Lawn+xc+x)+yc+y) = 1;
+	//*(*(Lawn+xc-x)+yc+y) = 2;
+	*(*(Lawn+xc+x)+yc-y) = 3;
+	//*(*(Lawn+xc-x)+yc-y) = 4;
+	//*(*(Lawn+xc+y)+yc+x) = 5;
+	//*(*(Lawn+xc-y)+yc+x) = 6;
+	*(*(Lawn+xc+y)+yc-x) = 7;
+	//*(*(Lawn+xc-y)+yc-x) = 8;
+	}
+
+void DrawCircle(char **Lawn, int r, int xcen, int ycen)
+	{
+	int x = 0;
+	int y = r;
+	int d = 3 - (2 * r);
+	Draw8(Lawn, xcen, ycen, x, y);
+	while(x <= y)
+		{
+		++x;
+		if(d < 0)
+			{
+			d = d + (4 * x) + 6;
+			}
+		else
+			{
+			d = d + 4 * (x - y) + 10;
+			--y;
+			}
+		Draw8(Lawn, xcen, ycen, x, y);
+		PrintLawn(Lawn, 17, 17);
+		printf("\n");
+		}
+	}
+
 int main(void)
 	{
 	char **Lawn;
 	int xsize, ysize;
 	FILE *plf = fopen("file", "r");	//pseudo-lawn file
 	Lawn = ReadLawn(plf, &xsize, &ysize);
-	PrintLawn(Lawn, xsize, ysize);
+	//PrintLawn(Lawn, xsize, ysize);
 	//pointlist *points = FindAreas(Lawn, xsize, ysize);	//OK
 	//PrintPoints(points);
 	//int len1 = CalcLenRight(Lawn, 3, 0, xsize);			//OK
@@ -76,6 +117,19 @@ int main(void)
 	//reclist tmp;
 	//CheckForUpDown(Lawn, 8, 2, xsize, ysize, 2, &tmp);	//OK
 	//CheckForDownUp(Lawn, 8, 9, 2, xsize, ysize, &tmp);	//OK
-	DoTheJob(Lawn, xsize, ysize);	//8
+	//DoTheJob(Lawn, xsize, ysize);							//OK for now
+	//DrawCircle(Lawn, 8, 8, 8);
+	/*PrintLawn(Lawn, xsize, ysize);
+	reclist *rectangles = malloc(sizeof(*rectangles));
+	UpDownRectangle(Lawn, 0, 0, xsize, ysize, rectangles, rectangles);
+	int Sprstats[4] = {1, 2, 3, 4};*/
+	//char mode = 'h';
+	//int type = 3;
+	//MakeDecisions(&mode, &type, rectangles, 1);			//OK
+	//printf("mode: %c    type: %d\n", mode, type);
+	//Lawn, rect, pixmean, time, nlawn, radius, Sprstats, type(0,1,2,3)
+	//double d = PlaceOnYAxis(Lawn, rectangles, 10, 2, 1, 6, Sprstats, 0);	//OK
+	//double d = PlaceInRectangle(Lawn, rectangles, 10, 2, 1, 3, Sprstats, 0);	//OK
+	//printf("%g\n", d);
 	return EXIT_SUCCESS;
 	}

@@ -595,7 +595,278 @@ void PrintRectangles(reclist *r)
 		}
 	}
 
-int DoTheJob(char **Lawn, int xsize, int ysize)
+void MakeDecisions(char *mode, int *type, reclist *Rectangles, int radius)
+	{
+	int xlen = Rectangles->x2 - Rectangles->x1 + 1;
+	int ylen = Rectangles->y2 - Rectangles->y1 + 1;
+	if(xlen <= radius*2+1 && ylen <= radius*2+1)
+		{
+		*mode = 'm';
+		return;
+		}
+	int curbest = xlen + ylen;
+	for(int i = 3; i >= 0; --i)
+		{
+		if(xlen >= ((radius*(4-i))*2+1) && ylen >= ((radius*(4-i))*2+1) &&
+		xlen%((radius*(4-i))*2+1) + ylen%((radius*(4-i))*2+1) <= curbest)
+			{
+			curbest = xlen%((radius*(4-i))*2+1) + ylen%((radius*(4-i))*2+1);
+			*type = i;
+			}
+		}
+	}
+
+double PlaceOneMiddle(char **Lawn, reclist *R, double pixmean, int time, double nlawn, int radius,
+					/*sprlist *Sprinklers*/ int Sprstats[], int type)
+	{
+	for(int i = 0; i < 3; i++)
+		{
+		/*if(PutSprinkler(Lawn, type*90+90, time, (R->x1+R->x2)/2, (R->y1+R->y2)/2, 0, Sprinklers) == 0)
+			return 0.0;*/
+		printf("x=%d y=%d\n", (R->x1+R->x2)/2, (R->y1+R->y2)/2);
+		}
+	double addedval = Sprstats[type]*time*3.0;
+	return pixmean+addedval/nlawn;
+	}
+
+double PlaceOnYAxis(char **Lawn, reclist *R, double pixmean, int time, double nlawn, int radius,
+						/*sprlist *Sprinklers*/ int Sprstats[], int type)
+	{
+	int deg = 0;
+	int shift = 1;
+	double addedval = 0.0;
+	int x;
+	int jump;
+	int stopparam;
+	if(type == 0)
+		x = R->x1;
+	else
+		x = (R->x1+R->x2)/2;
+	if(type != 3)
+		jump = 1 + radius;
+	else
+		jump = 1 + 2 * radius;
+	if(type <= 1)
+		stopparam = R->y2;
+	else
+		stopparam = R->y2-radius;
+	for(int i = R->y1+radius; i <= stopparam; i += jump)
+		{
+		if(type == 3)
+			{
+			for(int j = 0; j < 3; j++)
+				{
+				/*if(PutSprinkler(Lawn, 360, time, x, i, 0, Sprinklers) == 0)
+					return 0.0;*/
+				printf("x=%d y=%d\n", x, i);
+				}
+			addedval = Sprstats[type]*time*3;
+			}
+		else if(type == 2)
+			{
+			/*if(PutSprinkler(Lawn, 270, time, x, i, deg, Sprinklers) == 0)
+					return 0.0;*/
+			printf("x=%d y=%d\n", x, i);
+			if(deg == 0)
+				deg = 180;
+			else
+				deg = 0;
+			x += shift;
+			shift *= -1;
+			addedval = Sprstats[type]*time*2;
+			}
+		else
+			{
+			/*if(PutSprinkler(Lawn, 90+90*type, time, x, i, 0, Sprinklers) == 0)
+					return 0.0;*/
+			printf("x=%d y=%d\n", x, i);
+			addedval = Sprstats[type]*time*(4-type);
+			}
+		pixmean += addedval/nlawn;
+		}
+	return pixmean;
+	}
+
+double PlaceOnXAxis(char **Lawn, reclist *R, double pixmean, int time, double nlawn, int radius,
+						/*sprlist *Sprinklers*/ int Sprstats[], int type)
+	{
+	int deg = 0;
+	int shift = 1;
+	double addedval = 0.0;
+	int stopparam = R->x2 - radius;
+	int i;
+	int y;
+	int jump;
+	if(type == 0)
+		i = R->x1;
+	else
+		i = R->x1 + radius;
+	if(type <= 1)
+		y = R->y2;
+	else
+		y = (R->y1+R->y2)/2;
+	if(type%2 == 0)
+		jump = radius+ 1 ;
+	else
+		jump = 2 * radius + 1;
+	for(; i <= stopparam; i += jump)
+		{
+		if(type == 3)
+			{
+			for(int j = 0; j < 3; j++)
+				{
+				/*if(PutSprinkler(Lawn, 360, time, i, y, 0, Sprinklers) == 0)
+					return 0.0;*/
+				printf("x=%d y=%d\n", i, y);
+				}
+			addedval = Sprstats[type]*time*3;
+			}
+		else if(type == 2)
+			{
+			/*if(PutSprinkler(Lawn, 360, time, i, y, deg, Sprinklers) == 0)
+					return 0.0;*/
+			printf("x=%d y=%d\n", i, y);
+			if(deg == 0)
+				deg = 180;
+			else
+				deg = 0;
+			y += shift;
+			shift *= -1;
+			addedval = Sprstats[type]*time*2;
+			}
+		else
+			{
+			/*if(PutSprinkler(Lawn, 90+90*type, time, i, y, 0, Sprinklers) == 0)
+					return 0.0;*/
+			printf("x=%d y=%d\n", i, y);
+			addedval = Sprstats[type]*time*(4-type);
+			}
+		pixmean += addedval/nlawn;
+		}
+	return pixmean;
+	}
+
+int PlaceSprRow(double *addedval, int y, char **Lawn, reclist *R, int time, double nlawn,
+				int radius, /*sprlist *Sprinklers*/ int Sprstats[], int type)
+	{
+	double piv = 0.0;
+	int stopparam = R->x2 - radius;
+	int shift = 1;
+	int deg = 0;
+	int i;
+	int jump;
+	if(type == 0)
+		i = R->x1;
+	else
+		i = R->x1 + radius;
+	if(type%2 == 0)
+		jump = radius + 1;
+	else
+		jump = 2 * radius + 1;
+	for(; i <= stopparam; i += jump)
+		{
+		if(type == 3)
+			{
+			for(int j = 0; j < 3; j++)
+				{
+				/*if(PutSprinkler(Lawn, 360, time, i, y, 0, Sprinklers) == 0)
+					return 0;*/
+				printf("x=%d, y=%d\n", i, y);
+				}
+			piv = Sprstats[type]*time*3;
+			}
+		else if(type == 2)
+			{
+			/*if(PutSprinkler(Lawn, 360, time, i, y, deg, Sprinklers) == 0)
+					return 0;*/
+			printf("x=%d, y=%d\n", i, y);
+			if(deg == 0)
+				deg = 180;
+			else
+				deg = 0;
+			y += shift;
+			shift *= -1;
+			piv = Sprstats[type]*time*2;
+			}
+		else
+			{
+			/*if(PutSprinkler(Lawn, 90+90*type, time, i, y, 0, Sprinklers) == 0)
+					return 0;*/
+			printf("x=%d, y=%d\n", i, y);
+			piv = Sprstats[type]*time*(4-type);
+			}
+		*addedval += piv/nlawn;
+		}
+	return 1;
+	}
+
+double PlaceInRectangle(char **Lawn, reclist *R, double pixmean, int time, double nlawn, int radius,
+						/*sprlist *Sprinklers,*/ int Sprstats[], int type)
+	{
+	double addedval = 0.0;
+	int stopparam;
+	int jump;
+	if(type <= 1)
+		{
+		stopparam = R->y2;
+		jump = radius + 1;
+		}
+	else
+		{
+		stopparam = R->y2 - radius;
+		jump = 2 * radius + 1;
+		}
+	for(int i = R->y1 + radius; i <= stopparam; i += jump)
+		{
+		if(PlaceSprRow(&addedval, i, Lawn, R, time, nlawn, radius, /*Sprinklers,*/ Sprstats, type) == 0)
+			return 0.0;
+		printf("\n");
+		pixmean += addedval/nlawn;
+		}
+	return pixmean;
+	}
+
+double PlaceSprGreedily(char **Lawn, reclist *R, double pixmean, int time, double nlawn, int radius,
+						/*sprlist *Sprinklers,*/ int Sprstats[], int type)
+	{
+	int xlen = R->x2 - R->x1 + 1;
+	int ylen = R->y2 - R->y1 + 1;
+	if(xlen <= 2*radius+1)
+		{
+		return PlaceOnYAxis(Lawn, R, pixmean, time, nlawn, radius, /*Sprinklers,*/ Sprstats, type);
+		}
+	else if(ylen <= 2*radius+1)
+		{
+		return PlaceOnXAxis(Lawn, R, pixmean, time, nlawn, radius, /*Sprinklers,*/ Sprstats, type);
+		}
+	else
+		{
+		return PlaceInRectangle(Lawn, R, pixmean, time, nlawn, radius, /*Sprinklers,*/ Sprstats, type);
+		}
+	}
+
+double FillRecGreedily(char **Lawn, reclist *Rectangles, int time, int nlawn, int radius, /*sprlist *Sprinklers,*/ int Sprstats[])
+	{
+	/*Sprinklers -> x = -1;
+	Sprinklers -> next = NULL;*/
+	double pixmean = 1.0;
+	char mode = 'h';	// m/h
+	int type = 3;	// from 0 to 3		0-90 1-180 2-270 3-360
+	while(Rectangles != NULL)
+		{
+		MakeDecisions(&mode, &type, Rectangles, radius);
+		if(mode == 'm')
+			pixmean = PlaceOneMiddle(Lawn, Rectangles, pixmean, time, nlawn, radius, /*Sprinklers,*/ Sprstats, 360);
+		else	//if (mode == 'h')
+			pixmean = PlaceSprGreedily(Lawn, Rectangles, pixmean, time, nlawn, radius*(4-type), /*Sprinklers,*/ Sprstats, type);
+		if(pixmean == 0)
+			return 0;
+		Rectangles = Rectangles -> next;
+		}
+	return pixmean;
+	}
+
+int DoTheJob(char **Lawn, int xsize, int ysize, int time, int radius)
 	{
 	int errcode = 1;
 	pointlist *areas = FindAreas(Lawn, xsize, ysize);
@@ -613,6 +884,14 @@ int DoTheJob(char **Lawn, int xsize, int ysize)
 		rectangles -> next = NULL;
 		errcode = UpDownRectangle(Lawn, areas->x, areas->y, xsize, ysize, rectangles, rectangles);
 		if(errcode == 0)
+			{
+			FreeRectangles(rectangles);
+			FreePoints(pivareas);
+			return 0;
+			}
+		int Sprstats[4] = {0, 0, 0, 0 /* DODAĆ FUNKCJE OBLICZAJĄCE */};
+		double pixmean = FillRecGreedily(Lawn, rectangles, time, xsize*ysize, radius, /*Sprinklers,*/ Sprstats);
+		if(pixmean == 0.0)
 			{
 			FreeRectangles(rectangles);
 			FreePoints(pivareas);
