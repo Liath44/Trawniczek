@@ -38,7 +38,7 @@ typedef struct _reclist reclist;
  * 
  * Returns 0 on failure
  */
-int DoTheJob(char **Lawn, int xsize, int ysize, int time, int radius);
+int DoTheJob(char **Lawn, /*parameters *Param, sprlist *Sprinklers*/ int xsize, int ysize, int radius, int time);
 int DownUpRectangle(char **Lawn, int x, int y, int xsize, int ysize, reclist *rectangles, reclist *beg);
 int UpDownRectangle(char **Lawn, int x, int y, int xsize, int ysize, reclist *rectangles, reclist *beg);
 int CheckForUpDown2(char **Lawn, int x1, int x2, int y, int xsize, int ysize, reclist *rectangles, reclist *beg);
@@ -55,23 +55,14 @@ void FreePoints(pointlist *point);
 pointlist *NewPoint(int x, int y, pointlist *next);
 void SignAreaJump(char **Lawn, int xsize, int ysize, int i, int j);
 void ResetSignsJump(char **Lawn, int xsize, int ysize);
-double FillRecGreedily(char **Lawn, reclist *Rectangles, int time, int nlawn, int radius,
-						/*sprlist *Sprinklers,*/ int Sprstats[]);
-double PlaceSprGreedily(char **Lawn, reclist *R, double pixmean, int time, double nlawn, int radius,
-						/*sprlist *Sprinklers,*/ int Sprstats[], int type);
-double PlaceInRectangle(char **Lawn, reclist *R, double pixmean, int time, double nlawn, int radius,
-						/*sprlist *Sprinklers,*/ int Sprstats[], int type);
-int PlaceSprRow(double *addedval, int y, char **Lawn, reclist *R, int time, double nlawn,
-				int radius, /*sprlist *Sprinklers*/ int Sprstats[], int type);
-double PlaceOnXAxis(char **Lawn, reclist *R, double pixmean, int time, double nlawn, int radius,
-						/*sprlist *Sprinklers*/ int Sprstats[], int type);
-double PlaceOnYAxis(char **Lawn, reclist *R, double pixmean, int time, double nlawn, int radius,
-						/*sprlist *Sprinklers*/ int Sprstats[], int type);
-double PlaceOneMiddle(char **Lawn, reclist *R, double pixmean, int time, double nlawn, int radius,
-					/*sprlist *Sprinklers*/ int Sprstats[], int type);
-void MakeDecisions(char *mode, int *type, reclist *Rectangles, int radius);
 void PrintRectangles(reclist *r);
-
-
+int FillRecGreedily(char **Lawn, reclist *Rectangles, int time, int radius, /*sprlist *Sprinklers,*/ int Sprstats[]);
+int PlaceSprGreedily(char **Lawn, reclist *R, int time, int radius, /*sprlist *Sprinklers,*/ int Sprstats[], int type);
+int PlaceInRectangle(char **Lawn, reclist *R, int time, int radius, /*sprlist *Sprinklers,*/ int Sprstats[], int type);
+int PlaceSprRow(int y, char **Lawn, reclist *R, int time, int radius, /*sprlist *Sprinklers,*/ int Sprstats[], int type);
+int PlaceOnXAxis(char **Lawn, reclist *R, int time, int radius, /*sprlist *Sprinklers,*/ int Sprstats[], int type);
+int PlaceOnYAxis(char **Lawn, reclist *R, int time, int radius, /*sprlist *Sprinklers,*/ int Sprstats[], int type);
+int PlaceOneMiddle(char **Lawn, reclist *R, int time, /*sprlist *Sprinklers,*/ int Sprstats[], int type);
+void MakeDecisions(char *mode, int *type, reclist *Rectangles, int radius);
 
 #endif

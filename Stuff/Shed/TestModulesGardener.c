@@ -119,17 +119,16 @@ int main(void)
 	//CheckForDownUp(Lawn, 8, 9, 2, xsize, ysize, &tmp);	//OK
 	//DoTheJob(Lawn, xsize, ysize);							//OK for now
 	//DrawCircle(Lawn, 8, 8, 8);
-	/*PrintLawn(Lawn, xsize, ysize);
+	PrintLawn(Lawn, xsize, ysize);
 	reclist *rectangles = malloc(sizeof(*rectangles));
 	UpDownRectangle(Lawn, 0, 0, xsize, ysize, rectangles, rectangles);
-	int Sprstats[4] = {1, 2, 3, 4};*/
+	//int Sprstats[4] = {1, 2, 3, 4};
 	//char mode = 'h';
 	//int type = 3;
-	//MakeDecisions(&mode, &type, rectangles, 1);			//OK
+	//MakeDecisions(&mode, &type, rectangles, 1);				//OK
 	//printf("mode: %c    type: %d\n", mode, type);
-	//Lawn, rect, pixmean, time, nlawn, radius, Sprstats, type(0,1,2,3)
-	//double d = PlaceOnYAxis(Lawn, rectangles, 10, 2, 1, 6, Sprstats, 0);	//OK
-	//double d = PlaceInRectangle(Lawn, rectangles, 10, 2, 1, 3, Sprstats, 0);	//OK
-	//printf("%g\n", d);
+	//Lawn, reclist, time, radius, Sprstats[], type - 0, 1, 2, 3
+	//PlaceOnYAxis(Lawn, rectangles, 10, 2, 1, 6, Sprstats, 0);	//OK
+	//PlaceOnYAxis(Lawn, rectangles, 10, 2, Sprstats, 2);		//OK
 	return EXIT_SUCCESS;
 	}
