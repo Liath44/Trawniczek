@@ -3,10 +3,12 @@
 
 /*
 	TODO:
- - "MERGE" SOME FUNCTIONS	
+ - "MERGE" SOME FUNCTIONS (PLACING SPRINKLERS IN FOR, OTHERS)
  - COMMENT & EDIT COMMENTS	
  - FUNCTION FOR SPRSTATS	
  - IS TURNING (TO MAKE CIRCLES OUT OF THEM) TYPES 1 and 0 BENEFICIAL
+ - DO I UPDATE SPRINKLERS LIST OR MRBALLOG
+ - FUNCTION CALCULATING MEAN ON AREA
 	TODO:
 */
 
@@ -596,7 +598,7 @@ void MakeDecisions(char *mode, int *type, reclist *Rectangles, int radius)
 		}
 	}
 
-int PlaceOneMiddle(char **Lawn, reclist *R, int time, sprlist *Sprinklers, int Sprstats[], int type)
+int PlaceOneMiddle(char **Lawn, reclist *R, int time, sprlist *Sprinklers, int type)
 	{
 	for(int i = 0; i < 3; i++)
 		{
@@ -606,7 +608,7 @@ int PlaceOneMiddle(char **Lawn, reclist *R, int time, sprlist *Sprinklers, int S
 	return 1;
 	}
 
-int PlaceOnYAxis(char **Lawn, reclist *R, int time, int radius, sprlist *Sprinklers, int Sprstats[], int type)
+int PlaceOnYAxis(char **Lawn, reclist *R, int time, int radius, sprlist *Sprinklers, int type)
 	{
 	int deg = 0;
 	int shift = 1;
@@ -668,7 +670,7 @@ int PlaceOnYAxis(char **Lawn, reclist *R, int time, int radius, sprlist *Sprinkl
 	return 1;
 	}
 
-int PlaceOnXAxis(char **Lawn, reclist *R, int time, int radius, sprlist *Sprinklers, int Sprstats[], int type)
+int PlaceOnXAxis(char **Lawn, reclist *R, int time, int radius, sprlist *Sprinklers, int type)
 	{
 	int deg = 0;
 	int shift = 1;
@@ -730,7 +732,7 @@ int PlaceOnXAxis(char **Lawn, reclist *R, int time, int radius, sprlist *Sprinkl
 	return 1;
 	}
 
-int PlaceSprRow(int y, char **Lawn, reclist *R, int time, int radius, sprlist *Sprinklers, int Sprstats[], int type)
+int PlaceSprRow(int y, char **Lawn, reclist *R, int time, int radius, sprlist *Sprinklers, int type)
 	{
 	int stopparam = R->x2 - radius;
 	int shift = 1;
@@ -787,7 +789,7 @@ int PlaceSprRow(int y, char **Lawn, reclist *R, int time, int radius, sprlist *S
 	return 1;
 	}
 
-int PlaceInRectangle(char **Lawn, reclist *R, int time, int radius, sprlist *Sprinklers, int Sprstats[], int type)
+int PlaceInRectangle(char **Lawn, reclist *R, int time, int radius, sprlist *Sprinklers, int type)
 	{
 	int stopparam;
 	int jump;
@@ -803,31 +805,31 @@ int PlaceInRectangle(char **Lawn, reclist *R, int time, int radius, sprlist *Spr
 		}
 	for(int i = R->y1 + radius; i <= stopparam; i += jump)
 		{
-		if(PlaceSprRow(i, Lawn, R, time, radius, Sprinklers, Sprstats, type) == 0)
+		if(PlaceSprRow(i, Lawn, R, time, radius, Sprinklers, type) == 0)
 			return 0;
 		}
 	return 1;
 	}
 
-int PlaceSprGreedily(char **Lawn, reclist *R, int time, int radius, sprlist *Sprinklers, int Sprstats[], int type)
+int PlaceSprGreedily(char **Lawn, reclist *R, int time, int radius, sprlist *Sprinklers, int type)
 	{
 	int xlen = R->x2 - R->x1 + 1;
 	int ylen = R->y2 - R->y1 + 1;
 	if(xlen <= 2*radius+1)
 		{
-		return PlaceOnYAxis(Lawn, R, time, radius, Sprinklers, Sprstats, type);
+		return PlaceOnYAxis(Lawn, R, time, radius, Sprinklers, type);
 		}
 	else if(ylen <= 2*radius+1)
 		{
-		return PlaceOnXAxis(Lawn, R, time, radius, Sprinklers, Sprstats, type);
+		return PlaceOnXAxis(Lawn, R, time, radius, Sprinklers, type);
 		}
 	else
 		{
-		return PlaceInRectangle(Lawn, R, time, radius, Sprinklers, Sprstats, type);
+		return PlaceInRectangle(Lawn, R, time, radius, Sprinklers, type);
 		}
 	}
 
-int FillRecGreedily(char **Lawn, reclist *Rectangles, int time, int radius, sprlist *Sprinklers, int Sprstats[])
+int FillRecGreedily(char **Lawn, reclist *Rectangles, int time, int radius, sprlist *Sprinklers)
 	{
 	int errcode = 1;
 	Sprinklers -> x = -1;
@@ -838,15 +840,69 @@ int FillRecGreedily(char **Lawn, reclist *Rectangles, int time, int radius, sprl
 		{
 		MakeDecisions(&mode, &type, Rectangles, radius);
 		if(mode == 'm')
-			errcode = PlaceOneMiddle(Lawn, Rectangles, time, Sprinklers, Sprstats, 360);
+			errcode = PlaceOneMiddle(Lawn, Rectangles, time, Sprinklers, 360);
 		else	//if (mode == 'h')
-			errcode = PlaceSprGreedily(Lawn, Rectangles, time, radius*(4-type), Sprinklers, Sprstats, type);
+			errcode = PlaceSprGreedily(Lawn, Rectangles, time, radius*(4-type), Sprinklers, type);
 		if(errcode == 0)
 			return 0;
 		Rectangles = Rectangles -> next;
 		}
 	return 1;
 	}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void InitATW(areatowater *ATW, int x, int y, int radius, int xsize, int ysize)
+	{
+	ATW -> x = x;
+	ATW -> y = y;
+	ATW -> pixcount = 0;
+	ATW -> xmax = -1;
+	ATW -> xmin = xsize;
+	ATW -> ymax = -1;
+	ATW -> ymin = ysize;
+	ATW -> besttype = 3;
+	ATW -> bestdeg = 90;
+	ATW -> bestscore = 4*radius+xsize+4*radius+ysize;
+	}
+
+void SignATW(char **Lawn, areatowater *ATW, int xsize, int ysize, double currmean, int radius360, int Sprstats[])
+	{
+	
+	}
+
+int TryToPlaceMore(char **Lawn, parameters *Param, reclist *Rectangles, int Sprstats[], sprlist *Sprinklers)
+	{
+	int nospr = 0;
+	int sprwasadded = 1;
+	while(sprwasadded == 1 && nospr <= MAXSPR)
+		{
+		sprwasadded = 0;
+		reclist *Piv = Rectangles;
+		while(Piv != NULL)
+			{
+			for(int j = Piv->y1; j <= Piv->y2; j++)
+				{
+				for(int i = Piv->x1; i <= Piv->x2; j++)
+					{
+					if(*(*(Lawn+i)+j) < Param->currentmean)
+						{
+						areatowater ATW;
+						InitATW(&ATW, i, j, Param->radius360, Param->xsize, Param->ysize);
+						SignATW(Lawn, &ATW, Param->xsize, Param->ysize, Param->currentmean, Param->radius360, Sprstats);
+						//update mean && remember to reset Lawn
+						if(PlaceSprinklersInATW(Lawn, &ATW, Param, Sprstats, &nospr, &sprwasadded) == 0)
+							return 0;
+						i = ATW.xmax;//not the best thing to do but might be necessary 
+						}
+					}
+				}
+			Piv = Piv -> next;
+			}
+		Param->currentmean = CalculateMean(Lawn, Param);
+		}
+	return 1;
+	}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 int DoTheJob(char **Lawn, parameters *Param, sprlist *Sprinklers)
 	{
@@ -855,6 +911,7 @@ int DoTheJob(char **Lawn, parameters *Param, sprlist *Sprinklers)
 	pointlist *PivAreas = Areas;
 	if(Areas == NULL)
 		return 0;
+	int Sprstats[4] = {0, 0, 0, 0 /* DODAĆ FUNKCJE OBLICZAJĄCE */};
 	while(Areas != NULL)
 		{
 		reclist *Rectangles = malloc(sizeof(*Rectangles));
@@ -871,25 +928,23 @@ int DoTheJob(char **Lawn, parameters *Param, sprlist *Sprinklers)
 			FreePoints(PivAreas);
 			return 0;
 			}
-		int Sprstats[4] = {0, 0, 0, 0 /* DODAĆ FUNKCJE OBLICZAJĄCE */};
-		errcode = FillRecGreedily(Lawn, Rectangles, Param->time, Param->radius360, Sprinklers, Sprstats);
+		errcode = FillRecGreedily(Lawn, Rectangles, Param->time, Param->radius360, Sprinklers);
 		if(errcode == 0)
 			{
 			FreeRectangles(Rectangles);
 			FreePoints(PivAreas);
 			return 0;
 			}
+		/*Param->currentmean = CalculateMean(Lawn, Param);
+		if(TryToPlaceMore(Lawn, Param, Rectangles, Sprstats, Sprinklers) == 0);
+			{
+			FreeRectangles(Rectangles);
+			FreePoints(PivAreas);
+			return 0;
+			}*/
 		FreeRectangles(Rectangles);
 		Areas = Areas -> next;
 		}
-	Param->currentmean = CalculateMean(Lawn, Param);
-	/*
-	Areas = PivAreas;
-	while(Areas != NULL)
-		{
-		//(...)
-		}
-	*/
 	FreePoints(PivAreas);
 	return 1;	
 	}

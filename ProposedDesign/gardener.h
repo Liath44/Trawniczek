@@ -8,6 +8,8 @@
 
 //Macro pxl is defined in input.h
 #define JUMP pxl
+#define MAXSPR 500
+#define STATERR 1.2
 
 struct _pointlist
 	{
@@ -27,14 +29,20 @@ struct _reclist
 	};
 typedef struct _reclist reclist;
 
-struct _sprstats
+struct _areatowater
 	{
-	int pn90;
-	int pn180;
-	int pn270;
-	int pn360;
+	int x;
+	int y;
+	int pixcount;
+	int xmax;
+	int xmin;
+	int ymax;
+	int ymin;
+	int besttype;
+	int bestdeg;
+	int bestscore;
 	};
-typedef struct _sprstats sprstats;
+typedef struct _areatowater areatowater;
 
 /*
  * Places sprinklers on lawn in order to water it
