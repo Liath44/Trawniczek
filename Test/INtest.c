@@ -26,4 +26,23 @@ int main(int argc, char ** args)
 		return EXIT_FAILURE;
 		}
 	fclose(lawnfile);
+
+	//check
+	printf("xsize = %d\n", Param.xsize);
+	printf("ysize = %d\n", Param.ysize);
+	printf("pixelsize = %d\n", Param.pixelsize);
+	printf("nlawn = %d\n", Param.nlawn);
+	printf("time = %d\n", Param.time);
+	printf("radius360 = %d\n", Param.radius360);
+	printf("currentmean = %f\n", Param.currentmean);
+
+	for (int i = 0; i < Param.ysize; i+=10)
+    {
+        for (int j = 0; j < Param.xsize; j+=10)
+        {
+            printf("%d ", Lawn[i][j]);
+        }
+        printf("\n");
+    }
 }
+

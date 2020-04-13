@@ -22,7 +22,7 @@ int CreateLawn(FILE *lawnfile, parameters *P, char ***lawn)
             return -5;
         }
     }
-    *lawn = temp_lawn;
+     *lawn = temp_lawn;
 
     int x = 0, y = 0; //current position
     int maxX = maxLawnWidth/P->pixelsize;
@@ -30,12 +30,16 @@ int CreateLawn(FILE *lawnfile, parameters *P, char ***lawn)
     char c;
     while ((c = fgetc(lawnfile)) != EOF)
     {
+        if (y >= P->ysize/P->pixelsize)
+        {
+            BiggerLawn(P, lawn);
+        }
         if (c == '\n')
         {
             if (y == 0) maxX = x;
             else if (x != maxX)
             {
-                fprintf(stderr, "Line %d is too short.\n", y);
+                fprintf(stderr, "Line %d. is too short.\n", y+1);
                 return -100*y-1;
             }
             x = 0;
@@ -43,7 +47,7 @@ int CreateLawn(FILE *lawnfile, parameters *P, char ***lawn)
         }
         else if (x >= maxX)
         {
-            fprintf(stderr, "Line %d is too long.\n", y);
+            fprintf(stderr, "Line %d.is too long.\n", y+1);
             return -100*y-2;
         }
         else if (y >= maxY)
@@ -53,24 +57,24 @@ int CreateLawn(FILE *lawnfile, parameters *P, char ***lawn)
         }
         else if (c == emp)
         {
-            P->nlawn += (P->pixelsize)*(P->pixelsize);
-            fillSquare(*lawn, x++, y, 1, P->pixelsize);
-            if (x > P->xsize/P->pixelsize)
+            if (x >= P->xsize/P->pixelsize)
             {
                 BiggerLawn(P, lawn);
             }
+            P->nlawn += (P->pixelsize)*(P->pixelsize);
+            fillSquare(*lawn, x++, y, 1, P->pixelsize);
         }
         else if (c == blk)
         {
-            fillSquare(*lawn, x++, y, 0, P->pixelsize);
-            if (x > P->xsize/P->pixelsize)
+            if (x >= P->xsize/P->pixelsize)
             {
                 BiggerLawn(P, lawn);
             }
+            fillSquare(*lawn, x++, y, 0, P->pixelsize);
         }
         else
         {
-            fprintf(stderr, "Unrecognized character in %d line.\n", y);
+            fprintf(stderr, "Unrecognized character in %d. line.\n", y+1);
             return -100*y-4;
         }
     }
@@ -82,7 +86,7 @@ int CreateLawn(FILE *lawnfile, parameters *P, char ***lawn)
     }
     if (x != maxX && x != 0)
     {
-        fprintf(stderr, "Line %d is too short.\n", y);
+        fprintf(stderr, "Line %d. is too short.\n", y+1);
         return -100*y-1;
     }
     if (x == maxX) y++;
@@ -103,11 +107,11 @@ void InitializeParameters(FILE *lawnfile, parameters *P, int argc, char ** args)
 
 void fillSquare(char **lawn, int x, int y, char c, int pixel)
 {
-    for (int i = 0; i < pixel; i++)
+    for (int j = 0; j < pixel; j++)
     {
-        for (int j = 0; j < pixel; j++)
+        for (int i = 0; i < pixel; i++)
         {
-            lawn[x*pixel+i][y*pixel+j] = c;
+            lawn[y*pixel+i][x*pixel+j] = c;
         }
     }
 }
@@ -125,23 +129,23 @@ int BiggerLawn(parameters *P, char ***lawn)
     *lawn = temp_lawn;
     for (int i = 0; i < P->ysize; i++)
     {
-        char * temp_row = (char *) realloc(*lawn[i], temp_xsize * sizeof *(temp_row));
+        char * temp_row = (char *) realloc((*lawn)[i], temp_xsize * sizeof *(temp_row));
         if (temp_row == NULL)
         {
-            fprintf(stderr, "Could not allocate memory [realloc - %d].\n", i);
+            fprintf(stderr, "Could not allocate memory [realloc - %d].\n", i+1);
             return -5;
         }
-        *lawn[i] = temp_row;
+        (*lawn)[i] = temp_row;
     }
     for (int i = P->ysize; i < temp_ysize; i++)
     {
         char * temp_row = (char *) malloc(temp_xsize * sizeof *(temp_row));
         if (temp_row == NULL)
         {
-            fprintf(stderr, "Could not allocate memory [malloc - %d].\n", i);
+            fprintf(stderr, "Could not allocate memory [malloc - %d].\n", i+1);
             return -5;
         }
-        *lawn[i] = temp_row;
+        (*lawn)[i] = temp_row;
     }
     P->ysize = temp_ysize;
     P->xsize = temp_xsize;
@@ -153,7 +157,7 @@ int ReduceLawn(parameters *P, char ***lawn, int x, int y)
     int temp_xsize = x * P->pixelsize; //new number of columns
     for (int i = temp_ysize; i < P->ysize; i++)
     {
-        free(*lawn[i]);
+        free((*lawn)[i]);
     }
     char ** temp_lawn = (char **) realloc(*lawn, temp_ysize * sizeof *(temp_lawn));
     if (temp_lawn == NULL)
@@ -164,13 +168,13 @@ int ReduceLawn(parameters *P, char ***lawn, int x, int y)
     *lawn = temp_lawn;
     for (int i = 0; i < temp_ysize; i++)
     {
-        char * temp_row = (char *) realloc(*lawn[i], temp_xsize * sizeof *(temp_row));
+        char * temp_row = (char *) realloc((*lawn)[i], temp_xsize * sizeof *(temp_row));
         if (temp_row == NULL)
         {
-            fprintf(stderr, "Could not allocate memory [malloc - %d].\n", i);
+            fprintf(stderr, "Could not allocate memory [malloc - %d].\n", i+1);
             return -5;
         }
-        *lawn[i] = temp_row;
+        (*lawn)[i] = temp_row;
     }
     P->ysize = temp_ysize;
     P->xsize = temp_xsize;
