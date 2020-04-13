@@ -22,13 +22,14 @@
  * parameters *Param - points to structure that holds
  * lawn's parameters. Function updates fields of this structure
  *
- * char **lawn - points to to be crated matrix
+ * char ***lawn - points to the matrix that is the representation
+ * of the lawn
  *
  * Returns error code on failure
  *
  * Returns 0 on success.
  */
-int CreateLawn(FILE *lawnfile, parameters *Param, char **lawn);
+int CreateLawn(FILE *lawnfile, parameters *Param, char ***lawn);
 
 /*
  * Initializes Param structure with necessary information
@@ -39,14 +40,8 @@ int CreateLawn(FILE *lawnfile, parameters *Param, char **lawn);
  * parameters *Param - points to structure that holds
  * lawn's parameters. Function initializes fields of this structure
  *
- * int time - value form argv[3]. Defaults to 100. It is added to
- * the Param structure
- *
- * Returns error code on failure
- *
- * Returns 0 on success.
  */
-int InitializeParameters(FILE *lawnfile, parameters *Param, int time);
+void InitializeParameters(parameters *Param, int argc, char ** argv);
 
 /*
  * Fills the desired square on matrix with corresponding values
@@ -61,5 +56,32 @@ int InitializeParameters(FILE *lawnfile, parameters *Param, int time);
  * int pixel - the side length on the square. Taken from Param
  */
 void fillSquare(char **lawn, int x, int y, char c, int pixel);
+
+/*
+ * Doubles the size of the matrix
+ *
+ * parameters *Param - points to structure that holds
+ * lawn's parameters. Function updates fields of this structure
+ *
+ * char ***lawn - points to the matrix that is the representation
+ * of the lawn
+ *
+ */
+int BiggerLawn(parameters *Param, char ***lawn);
+
+/*
+ * Reduces the size of the matrix so there are not unused spaces
+ *
+ * parameters *Param - points to structure that holds
+ * lawn's parameters. Function updates fields of this structure
+ *
+ * char ***lawn - points to the matrix that is the representation
+ * of the lawn
+ *
+ * int x, int y - desired size of the matrix, in input file
+ * characters. To be multiplied by pixelSize
+ *
+ */
+int ReduceLawn(parameters *Param, char ***lawn, int x, int y);
 
 #endif
