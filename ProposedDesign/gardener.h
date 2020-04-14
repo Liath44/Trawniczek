@@ -9,7 +9,8 @@
 //Macro pxl is defined in input.h
 #define JUMP pxl
 #define MAXSPR 500
-#define STATERR 1.2
+#define STATERR 0.8
+#define BOUNCEERR 0.75
 
 struct _pointlist
 	{

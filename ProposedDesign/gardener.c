@@ -9,6 +9,8 @@
  - IS TURNING (TO MAKE CIRCLES OUT OF THEM) TYPES 1 and 0 BENEFICIAL
  - DO I UPDATE SPRINKLERS LIST OR MRBALLOG
  - FUNCTION CALCULATING MEAN ON AREA
+ - BREAK SIGNATW INTO TWO FUNCTIONS - ONE CHECKS YMIN YMAX AND OTHER ONLY XMAX XMIN
+ - ALTERNATIVE TO ATW->x = (ATW->xmin + ATW->xmax)/2;
 	TODO:
 */
 
@@ -851,23 +853,329 @@ int FillRecGreedily(char **Lawn, reclist *Rectangles, int time, int radius, sprl
 	}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void InitATW(areatowater *ATW, int x, int y, int radius, int xsize, int ysize)
+void InitATW(areatowater *ATW, int radius, int xsize, int ysize)
 	{
-	ATW -> x = x;
-	ATW -> y = y;
+	ATW -> x = -1;
+	ATW -> y = -1;
 	ATW -> pixcount = 0;
 	ATW -> xmax = -1;
 	ATW -> xmin = xsize;
 	ATW -> ymax = -1;
 	ATW -> ymin = ysize;
 	ATW -> besttype = 3;
-	ATW -> bestdeg = 90;
+	ATW -> bestdeg = 0;
 	ATW -> bestscore = 4*radius+xsize+4*radius+ysize;
 	}
 
-void SignATW(char **Lawn, areatowater *ATW, int xsize, int ysize, double currmean, int radius360, int Sprstats[])
+void UpdateMinMax(areatowater *ATW, int x, int y)
 	{
-	
+	if(x < ATW->xmin)
+		ATW->xmin = x;
+	else if(x > ATW->xmax)
+		ATW->xmax = x;
+	if(y < ATW->ymin)
+		ATW->ymin = y;
+	else if(y > ATW->ymax)
+		ATW->ymax = y;
+	}
+
+void TryToFit360(areatowater *ATW, int radius)
+	{
+	int score = abs(ATW->xmax - ATW->xmin - 2*radius) + abs(ATW->ymax - ATW->ymin - 2*radius);
+	if(score < ATW->bestscore)
+		{
+		ATW->x = (ATW->xmin + ATW->xmax)/2;
+		ATW->y = (ATW->ymin + ATW->ymax)/2;
+		ATW->besttype = 3;
+		ATW->bestdeg = 0;
+		ATW->bestscore = score;
+		}
+	}
+
+int AbleToBounceOYLeft(char **Lawn, int xsize, int ysize, int y1, int y2, int x)
+	{
+	int start = y1;
+	int stop = y2;
+	int count = 0;
+	if(y1 < 0)
+		start = 0;
+	if(y2 >= ysize)
+		stop = ysize - 1; 
+	if(stop - start < (y2 - y1)/2)
+		return 0;
+	for(int i = start; i <= stop; i++)
+		{
+		if(*(*(Lawn+x)+i) != 0 && (x == 0 || *(*(Lawn+x-1)+i) == 0))
+			++count;
+		}
+	if(count >= (int)(y2-y1+1)*BOUNCEERR)
+		return 1;
+	return 0;	
+	}
+
+int AbleToBounceOYRight(char **Lawn, int xsize, int ysize, int y1, int y2, int x)
+	{
+	int start = y1;
+	int stop = y2;
+	int count = 0;
+	if(y1 < 0)
+		start = 0;
+	if(y2 >= ysize)
+		stop = ysize - 1; 
+	if(stop - start < (y2 - y1)/2)
+		return 0;
+	for(int i = start; i <= stop; i++)
+		{
+		if(*(*(Lawn+x)+i) != 0 && (x+1 == xsize || *(*(Lawn+x+1)+i) == 0))
+			++count;
+		}
+	if(count >= (int)(y2-y1+1)*BOUNCEERR)
+		return 1;
+	return 0;	
+	}
+
+int AbleToBounceOXUp(char **Lawn, int xsize, int ysize, int x1, int x2, int y)
+	{
+	int start = x1;
+	int stop = x2;
+	int count = 0;
+	if(x1 < 0)
+		start = 0;
+	if(x2 >= xsize)
+		stop = xsize - 1; 
+	if(stop - start < (x2 - x1)/2)
+		return 0;
+	for(int i = start; i <= stop; i++)
+		{
+		if(*(*(Lawn+i)+y) != 0 && (y == 0 || *(*(Lawn+i)+y-1) == 0))
+			++count;
+		}
+	if(count >= (int)(x2-x1+1)*BOUNCEERR)
+		return 1;
+	return 0;	
+	}
+
+//U
+int AbleToBounceOXDown(char **Lawn, int xsize, int ysize, int x1, int x2, int y)
+	{
+	int start = x1;
+	int stop = x2;
+	int count = 0;
+	if(x1 < 0)
+		start = 0;
+	if(x2 >= xsize)
+		stop = xsize - 1; 
+	if(stop - start < (x2 - x1)/2)
+		return 0;
+	for(int i = start; i <= stop; i++)
+		{
+		if(*(*(Lawn+i)+y) != 0 && (y+1 == ysize || *(*(Lawn+i)+y+1) == 0))
+			++count;
+		}
+	if(count >= (int)(x2-x1+1)*BOUNCEERR)
+		return 1;
+	return 0;	
+	}
+
+void TryToFitHalf360(char **Lawn, areatowater *ATW, int xsize, int ysize, int radius)
+	{
+	int x1 = (ATW->xmax + ATW->xmin)/2 - radius;
+	int x2 = x1 + 2*radius;
+	int y1 = (ATW->ymax + ATW->ymin)/2 - radius;
+	int y2 = y1 + 2*radius;
+	if(AbleToBounceOXDown(Lawn, xsize, ysize, x1, x2, ATW->ymax) == 1)//U
+		{
+		int score = abs(ATW->ymax - ATW->ymin - radius) + abs(ATW->xmax - ATW->xmin - 2*radius);
+		if(score < ATW->bestscore)
+			{
+			ATW->x = (ATW->xmin + ATW->xmax)/2;
+			ATW->y = ATW->ymax;
+			ATW->besttype = 7;
+			ATW->bestdeg = 0;
+			ATW->bestscore = score;
+			}
+		}
+	if(AbleToBounceOXUp(Lawn, xsize, ysize, x1, x2, ATW->ymin) == 1)
+		{
+		int score = abs(ATW->ymax - ATW->ymin - radius) + abs(ATW->xmax - ATW->xmin - 2*radius);
+		if(score < ATW->bestscore)
+			{
+			ATW->x = (ATW->xmin + ATW->xmax)/2;
+			ATW->y = ATW->ymin;
+			ATW->besttype = 7;
+			ATW->bestdeg = 0;
+			ATW->bestscore = score;
+			}
+		}
+	if(AbleToBounceOYRight(Lawn, xsize, ysize, y1, y2, ATW->xmax) == 1)
+		{
+		int score = abs(ATW->ymax - ATW->ymin - 2*radius) + abs(ATW->xmax - ATW->xmin - radius);
+		if(score < ATW->bestscore)
+			{
+			ATW->x = ATW->xmax;
+			ATW->y = (ATW->ymin + ATW->ymax)/2;
+			ATW->besttype = 7;
+			ATW->bestdeg = 0;
+			ATW->bestscore = score;
+			}
+		}
+	if(AbleToBounceOYLeft(Lawn, xsize, ysize, y1, y2, ATW->xmin) == 1)
+		{
+		int score = abs(ATW->ymax - ATW->ymin - 2*radius) + abs(ATW->xmax - ATW->xmin - radius);
+		if(score < ATW->bestscore)
+			{
+			ATW->x = ATW->xmin;
+			ATW->y = (ATW->ymin + ATW->ymax)/2;
+			ATW->besttype = 7;
+			ATW->bestdeg = 0;
+			ATW->bestscore = score;
+			}
+		}
+	}
+
+int CountSignedPix(char **Lawn, int xl, int xr, int yu, int yd)
+	{
+	int count = 0;
+	for(int j = yu; j <= yd; j++)
+		{
+		for(int i = xl; i <= xl; i++)
+			{
+			if(*(*(Lawn+i)+j) < 0)
+				++count;
+			}
+		}
+	return count;
+	}
+
+void TryToFit180(char **Lawn, areatowater *ATW, int radius)
+	{
+	int score = abs(ATW->ymax - ATW->ymin - radius) + abs(ATW->xmax - ATW->xmin - 2*radius);
+	int score2 = abs(ATW->ymax - ATW->ymin - 2*radius) + abs(ATW->xmax - ATW->xmin - radius);
+	if(score < ATW->bestscore && score < score2)
+		{
+		ATW->x = (ATW->xmin + ATW->xmax)/2;
+		ATW->besttype = 1;
+		ATW->bestscore = score;
+		int pixcount1 = CountSignedPix(Lawn, ATW->xmin, ATW->xmax, ATW->ymin, (ATW->ymax + ATW->ymin)/2);
+		int pixcount2 = CountSignedPix(Lawn, ATW->xmin, ATW->xmax, (ATW->ymax + ATW->ymin)/2, ATW->ymax);
+		if(pixcount1 < pixcount2)
+			{
+			ATW->y = ATW->ymax;
+			ATW->bestdeg = 0;
+			}
+		else//U
+			{
+			ATW->y = ATW->ymin;
+			ATW->bestdeg = 180;
+			}
+		}
+	else if(score2 < ATW->bestscore)
+		{
+		ATW->y = (ATW->ymin + ATW->ymax)/2;
+		ATW->besttype = 1;
+		ATW->bestscore = score2;
+		int pixcount1 = CountSignedPix(Lawn, ATW->xmin, (ATW->xmin + ATW->xmax)/2, ATW->ymin, ATW->ymax);
+		int pixcount2 = CountSignedPix(Lawn, (ATW->xmin + ATW->xmax)/2, ATW->xmax, ATW->ymin, ATW->ymax);
+		if(pixcount1 < pixcount2)
+			{
+			ATW->x = ATW->xmin;
+			ATW->bestdeg = 270;
+			}
+		else//c
+			{
+			ATW->x = ATW->ymin;
+			ATW->bestdeg = 90;
+			}
+		}
+	}
+
+void TryToUpdateATW(char **Lawn, areatowater *ATW, char *cont, int xsize, int ysize, int radius360, int Sprstats[])
+	{
+	if((int)Sprstats[3]*STATERR == ATM->pixcount)
+		TryToFit360(ATW, radius360);
+	if((int)Sprstats[3]*STATERR/2 == ATM->pixcount)
+		TryToFitHalf360(Lawn, ATW, xsize, ysize, radius360);
+	if((int)Sprstats[2]*STATERR == ATM->pixcount)
+		
+	if((int)Sprstats[2]*STATERR/2 == ATM->pixcount)
+
+	if((int)Sprstats[1]*STATERR == ATM->pixcount)
+		TryToFit180(Lawn, ATW, 3*radius360);
+	if((int)Sprstats[1]*STATERR/2 == ATM->pixcount)
+
+	if((int)Sprstats[0]*STATERR == ATM->pixcount)
+
+	if((int)Sprstats[0]*STATERR/2 == ATM->pixcount)
+
+	if((int)Sprstats[1]*STATERR < ATM->pixcount)
+		*cont = 'n';
+	}
+
+void SignATW(char **Lawn, int x, int y, areatowater *ATW, char *cont, int xsize, int ysize, double currmean, int radius360, int Sprstats[])
+	{
+	if(*cont == 'n')
+		return;
+	ATW->pixcount += 1;
+	UpdateMinMax(ATW, x, y);
+	*(*(Lawn+x)+y) *= -1;
+	TryToUpdateATW(Lawn, ATW, cont, xsize, ysize, radius360, Sprstats);
+	if(ATW->pixcount % 4 == 0)
+		{
+		if(x+1 < xsize && *(*(Lawn+x+1)+y) <= currmean && *(*(Lawn+x+1)+y) > 0)
+			SignATW(Lawn, x+1, y, ATW, xsize, ysize, currmean, radius360, Sprstats);
+		if(y-1 >= 0 && *(*(Lawn+x)+y-1) <= currmean && *(*(Lawn+x)+y-1) > 0)
+			SignATW(Lawn, x, y-1, ATW, xsize, ysize, currmean, radius360, Sprstats);
+		if(x-1 >= 0 && *(*(Lawn+x-1)+y) <= currmean && *(*(Lawn+x-1)+y) > 0)
+			SignATW(Lawn, x-1, y, ATW, xsize, ysize, currmean, radius360, Sprstats);
+		if(y+1 < ysize && *(*(Lawn+x)+y+1) <= currmean && *(*(Lawn+x)+y+1) > 0)
+			SignATW(Lawn, x, y+1, ATW, xsize, ysize, currmean, radius360, Sprstats);
+		}
+	else if(ATW->pixcount % 4 == 1)
+		{
+		if(y+1 < ysize && *(*(Lawn+x)+y+1) <= currmean && *(*(Lawn+x)+y+1) > 0)
+			SignATW(Lawn, x, y+1, ATW, xsize, ysize, currmean, radius360, Sprstats);
+		if(x+1 < xsize && *(*(Lawn+x+1)+y) <= currmean && *(*(Lawn+x+1)+y) > 0)
+			SignATW(Lawn, x+1, y, ATW, xsize, ysize, currmean, radius360, Sprstats);
+		if(y-1 >= 0 && *(*(Lawn+x)+y-1) <= currmean && *(*(Lawn+x)+y-1) > 0)
+			SignATW(Lawn, x, y-1, ATW, xsize, ysize, currmean, radius360, Sprstats);
+		if(x-1 >= 0 && *(*(Lawn+x-1)+y) <= currmean && *(*(Lawn+x-1)+y) > 0)
+			SignATW(Lawn, x-1, y, ATW, xsize, ysize, currmean, radius360, Sprstats);
+		}
+	else if(ATW->pixcount % 4 == 2)
+		{
+		if(x-1 >= 0 && *(*(Lawn+x-1)+y) <= currmean && *(*(Lawn+x-1)+y) > 0)
+			SignATW(Lawn, x-1, y, ATW, xsize, ysize, currmean, radius360, Sprstats);
+		if(y+1 < ysize && *(*(Lawn+x)+y+1) <= currmean && *(*(Lawn+x)+y+1) > 0)
+			SignATW(Lawn, x, y+1, ATW, xsize, ysize, currmean, radius360, Sprstats);
+		if(x+1 < xsize && *(*(Lawn+x+1)+y) <= currmean && *(*(Lawn+x+1)+y) > 0)
+			SignATW(Lawn, x+1, y, ATW, xsize, ysize, currmean, radius360, Sprstats);
+		if(y-1 >= 0 && *(*(Lawn+x)+y-1) <= currmean && *(*(Lawn+x)+y-1) > 0)
+			SignATW(Lawn, x, y-1, ATW, xsize, ysize, currmean, radius360, Sprstats);
+		}
+		else	//if(ATW->pixcount % 4 == 3)
+		{
+		if(y-1 >= 0 && *(*(Lawn+x)+y-1) <= currmean && *(*(Lawn+x)+y-1) > 0)
+			SignATW(Lawn, x, y-1, ATW, xsize, ysize, currmean, radius360, Sprstats);
+		if(x-1 >= 0 && *(*(Lawn+x-1)+y) <= currmean && *(*(Lawn+x-1)+y) > 0)
+			SignATW(Lawn, x-1, y, ATW, xsize, ysize, currmean, radius360, Sprstats);
+		if(y+1 < ysize && *(*(Lawn+x)+y+1) <= currmean && *(*(Lawn+x)+y+1) > 0)
+			SignATW(Lawn, x, y+1, ATW, xsize, ysize, currmean, radius360, Sprstats);
+		if(x+1 < xsize && *(*(Lawn+x+1)+y) <= currmean && *(*(Lawn+x+1)+y) > 0)
+			SignATW(Lawn, x+1, y, ATW, xsize, ysize, currmean, radius360, Sprstats);
+		}
+	}
+
+void UnsignATW(char **Lawn, int x, int y, int xsize, int ysize)
+	{
+	*(*(Lawn+x)+y) *= -1;
+	if(x+1 < xsize && *(*(Lawn+x+1)+y) < 0)
+		UnsignATW(Lawn, x+1, y, xsize, ysize);
+	if(x-1 >= 0 && *(*(Lawn+x-1)+y) < 0)
+		UnsignATW(Lawn, x-1, y, xsize, ysize);
+	if(y+1 < ysize && *(*(Lawn+x)+y+1) < 0)
+		UnsignATW(Lawn, x, y+1, xsize, ysize);
+	if(y-1 >= 0 && *(*(Lawn+x)+y-1) < 0)
+		UnsignATW(Lawn, x, y-1, xsize, ysize);
 	}
 
 int TryToPlaceMore(char **Lawn, parameters *Param, reclist *Rectangles, int Sprstats[], sprlist *Sprinklers)
@@ -884,14 +1192,24 @@ int TryToPlaceMore(char **Lawn, parameters *Param, reclist *Rectangles, int Sprs
 				{
 				for(int i = Piv->x1; i <= Piv->x2; j++)
 					{
-					if(*(*(Lawn+i)+j) < Param->currentmean)
+					if(*(*(Lawn+i)+j) <= Param->currentmean)
 						{
 						areatowater ATW;
-						InitATW(&ATW, i, j, Param->radius360, Param->xsize, Param->ysize);
-						SignATW(Lawn, &ATW, Param->xsize, Param->ysize, Param->currentmean, Param->radius360, Sprstats);
+						int xstart = i;
+						int ystart = j;
+						char cont = 'y';
+						InitATW(&ATW, Param->radius360, Param->xsize, Param->ysize);
+						SignATW(Lawn, i, j, &ATW, &cont, Param->xsize, Param->ysize, Param->currentmean, Param->radius360, Sprstats);
 						//update mean && remember to reset Lawn
-						if(PlaceSprinklersInATW(Lawn, &ATW, Param, Sprstats, &nospr, &sprwasadded) == 0)
-							return 0;
+						if(ATW->x != -1)
+							{
+							if(PlaceSprinklersInATW(Lawn, &ATW, Param, Sprstats, &nospr, &sprwasadded) == 0)
+								return 0;
+							}
+						else
+							{
+							UnsignATW(Lawn, xstart, ystart, Param->xsize, Param->ysize);
+							}
 						i = ATW.xmax;//not the best thing to do but might be necessary 
 						}
 					}
