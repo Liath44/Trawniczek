@@ -11,6 +11,8 @@
  - FUNCTION CALCULATING MEAN ON AREA
  - BREAK SIGNATW INTO TWO FUNCTIONS - ONE CHECKS YMIN YMAX AND OTHER ONLY XMAX XMIN
  - ALTERNATIVE TO ATW->x = (ATW->xmin + ATW->xmax)/2;
+ - WHEN PLACING IN ATW (ATW->xmin + ATW->xmax)/2 CAN BE WALL - THINK OF A BETTER THAN CURRENT SOLUTION
+ - HALVING 180 AND 90 IS MORE TRICKY THAN I THOUGHT - THEY ARE AFTERALL NONSYMETRICAL - 180 _U_ scenario
 	TODO:
 */
 
@@ -879,13 +881,15 @@ void UpdateMinMax(areatowater *ATW, int x, int y)
 		ATW->ymax = y;
 	}
 
-void TryToFit360(areatowater *ATW, int radius)
+void TryToFit360(char **Lawn, areatowater *ATW, int radius)
 	{
 	int score = abs(ATW->xmax - ATW->xmin - 2*radius) + abs(ATW->ymax - ATW->ymin - 2*radius);
-	if(score < ATW->bestscore)
+	int xc = (ATW->xmin + ATW->xmax)/2;
+	int yc = (ATW->ymin + ATW->ymax)/2;
+	if(score < ATW->bestscore && *(*(Lawn+xc)+yc) != 0)
 		{
-		ATW->x = (ATW->xmin + ATW->xmax)/2;
-		ATW->y = (ATW->ymin + ATW->ymax)/2;
+		ATW->x = xc;
+		ATW->y = yc;
 		ATW->besttype = 3;
 		ATW->bestdeg = 0;
 		ATW->bestscore = score;
@@ -983,12 +987,14 @@ void TryToFitHalf360(char **Lawn, areatowater *ATW, int xsize, int ysize, int ra
 	int x2 = x1 + 2*radius;
 	int y1 = (ATW->ymax + ATW->ymin)/2 - radius;
 	int y2 = y1 + 2*radius;
+	int xc = (ATW->xmin + ATW->xmax)/2;
+	int yc = (ATW->xmin + ATW->xmax)/2;
 	if(AbleToBounceOXDown(Lawn, xsize, ysize, x1, x2, ATW->ymax) == 1)//U
 		{
 		int score = abs(ATW->ymax - ATW->ymin - radius) + abs(ATW->xmax - ATW->xmin - 2*radius);
-		if(score < ATW->bestscore)
+		if(score < ATW->bestscore && *(*(Lawn+xc)+ATW->ymax) != 0)
 			{
-			ATW->x = (ATW->xmin + ATW->xmax)/2;
+			ATW->x = xc;
 			ATW->y = ATW->ymax;
 			ATW->besttype = 7;
 			ATW->bestdeg = 0;
@@ -998,9 +1004,9 @@ void TryToFitHalf360(char **Lawn, areatowater *ATW, int xsize, int ysize, int ra
 	if(AbleToBounceOXUp(Lawn, xsize, ysize, x1, x2, ATW->ymin) == 1)
 		{
 		int score = abs(ATW->ymax - ATW->ymin - radius) + abs(ATW->xmax - ATW->xmin - 2*radius);
-		if(score < ATW->bestscore)
+		if(score < ATW->bestscore && *(*(Lawn+xc)+ATW->ymin) != 0)
 			{
-			ATW->x = (ATW->xmin + ATW->xmax)/2;
+			ATW->x = xc;
 			ATW->y = ATW->ymin;
 			ATW->besttype = 7;
 			ATW->bestdeg = 0;
@@ -1010,10 +1016,10 @@ void TryToFitHalf360(char **Lawn, areatowater *ATW, int xsize, int ysize, int ra
 	if(AbleToBounceOYRight(Lawn, xsize, ysize, y1, y2, ATW->xmax) == 1)
 		{
 		int score = abs(ATW->ymax - ATW->ymin - 2*radius) + abs(ATW->xmax - ATW->xmin - radius);
-		if(score < ATW->bestscore)
+		if(score < ATW->bestscore && *(*(Lawn+ATW->xmax)+yc) != 0)
 			{
 			ATW->x = ATW->xmax;
-			ATW->y = (ATW->ymin + ATW->ymax)/2;
+			ATW->y = yc;
 			ATW->besttype = 7;
 			ATW->bestdeg = 0;
 			ATW->bestscore = score;
@@ -1022,10 +1028,10 @@ void TryToFitHalf360(char **Lawn, areatowater *ATW, int xsize, int ysize, int ra
 	if(AbleToBounceOYLeft(Lawn, xsize, ysize, y1, y2, ATW->xmin) == 1)
 		{
 		int score = abs(ATW->ymax - ATW->ymin - 2*radius) + abs(ATW->xmax - ATW->xmin - radius);
-		if(score < ATW->bestscore)
+		if(score < ATW->bestscore && *(*(Lawn+ATW->xmin)+yc) != 0)
 			{
 			ATW->x = ATW->xmin;
-			ATW->y = (ATW->ymin + ATW->ymax)/2;
+			ATW->y = yc;
 			ATW->besttype = 7;
 			ATW->bestdeg = 0;
 			ATW->bestscore = score;
@@ -1051,58 +1057,313 @@ void TryToFit180(char **Lawn, areatowater *ATW, int radius)
 	{
 	int score = abs(ATW->ymax - ATW->ymin - radius) + abs(ATW->xmax - ATW->xmin - 2*radius);
 	int score2 = abs(ATW->ymax - ATW->ymin - 2*radius) + abs(ATW->xmax - ATW->xmin - radius);
+	int xc = (ATW->xmin + ATW->xmax)/2;
+	int yc = (ATW->ymin + ATW->ymax)/2;
 	if(score < ATW->bestscore && score < score2)
 		{
-		ATW->x = (ATW->xmin + ATW->xmax)/2;
-		ATW->besttype = 1;
-		ATW->bestscore = score;
 		int pixcount1 = CountSignedPix(Lawn, ATW->xmin, ATW->xmax, ATW->ymin, (ATW->ymax + ATW->ymin)/2);
 		int pixcount2 = CountSignedPix(Lawn, ATW->xmin, ATW->xmax, (ATW->ymax + ATW->ymin)/2, ATW->ymax);
-		if(pixcount1 < pixcount2)
+		if(pixcount1 < pixcount2 && *(*(Lawn+xc)+ATW->ymax) != 0)
 			{
+			ATW->x = xc;
+			ATW->besttype = 1;
+			ATW->bestscore = score;
 			ATW->y = ATW->ymax;
 			ATW->bestdeg = 0;
 			}
-		else//U
+		else if(*(*(Lawn+xc)+ATW->ymin) != 0)//U
 			{
+			ATW->x = (ATW->xmin + ATW->xmax)/2;
+			ATW->besttype = 1;
+			ATW->bestscore = score;
 			ATW->y = ATW->ymin;
 			ATW->bestdeg = 180;
 			}
 		}
 	else if(score2 < ATW->bestscore)
 		{
-		ATW->y = (ATW->ymin + ATW->ymax)/2;
-		ATW->besttype = 1;
-		ATW->bestscore = score2;
 		int pixcount1 = CountSignedPix(Lawn, ATW->xmin, (ATW->xmin + ATW->xmax)/2, ATW->ymin, ATW->ymax);
 		int pixcount2 = CountSignedPix(Lawn, (ATW->xmin + ATW->xmax)/2, ATW->xmax, ATW->ymin, ATW->ymax);
-		if(pixcount1 < pixcount2)
+		if(pixcount1 < pixcount2 && *(*(Lawn+ATW->xmin)+yc) != 0)
 			{
+			ATW->y = yc;
+			ATW->besttype = 1;
+			ATW->bestscore = score2;
 			ATW->x = ATW->xmin;
 			ATW->bestdeg = 270;
 			}
-		else//c
+		else if(*(*(Lawn+ATW->xmax)+yc) != 0)//c
 			{
-			ATW->x = ATW->ymin;
+			ATW->y = yc;
+			ATW->besttype = 1;
+			ATW->bestscore = score2;
+			ATW->x = ATW->xmax;
 			ATW->bestdeg = 90;
 			}
+		}
+	}
+
+void TryToFit270(char **Lawn, areatowater *ATW, int radius)
+	{
+	int score = abs(ATW->xmax - ATW->xmin - 2*radius) + abs(ATW->ymax - ATW->ymin - 2*radius);
+	int xc = (ATW->xmin + ATW->xmax)/2;
+	int yc = (ATW->ymin + ATW->ymax)/2;
+	if(score < ATW->bestscore && *(*(Lawn+xc)+yc) != 0)
+		{
+		ATW->x = xc;
+		ATW->y = yc;
+		ATW->besttype = 2;
+		ATW->bestdeg = 0;
+		ATW->bestscore = score;
+		}
+	}
+
+void TryToFitHalf270(char **Lawn, areatowater *ATW, int xsize, int ysize, int radius)
+	{
+	int xc = (ATW->xmin + ATW->xmax)/2;
+	int yc = (ATW->xmin + ATW->xmax)/2;
+	int x1 = xc - radius;
+	int x2 = x1 + 2*radius;
+	int y1 = yc - radius;
+	int y2 = y1 + 2*radius;
+	if(AbleToBounceOXDown(Lawn, xsize, ysize, x1, x2, ATW->ymax) == 1)//U
+		{
+		int score = abs(ATW->ymax - ATW->ymin - radius) + abs(ATW->xmax - ATW->xmin - 2*radius);
+		if(score < ATW->bestscore && *(*(Lawn+xc)+ATW->ymax) != 0)
+			{
+			ATW->x = xc;
+			ATW->y = ATW->ymax;
+			ATW->besttype = 6;
+			if(ATW->ymax-radius/2-1 >= 0)
+				{
+				if(xc+radius/2+1 < xsize && *(*(Lawn+xc+radius/2+1)+ATW->ymax-radius/2-1) != 0)
+					ATW->bestdeg = 90;
+				else if(xc-radius/2-1 >= 0 && *(*(Lawn+xc-radius/2-1)+ATW->ymax-radius/2-1) != 0)
+					ATW->bestdeg = 180;
+				else
+					ATW->bestdeg = -180;
+				}
+			else 
+				ATW->bestdeg = -90;
+			ATW->bestscore = score;
+			}
+		}
+	if(AbleToBounceOXUp(Lawn, xsize, ysize, x1, x2, ATW->ymin) == 1)
+		{
+		int score = abs(ATW->ymax - ATW->ymin - radius) + abs(ATW->xmax - ATW->xmin - 2*radius);
+		if(score < ATW->bestscore && *(*(Lawn+xc)+ATW->ymin) != 0)
+			{
+			ATW->x = xc;
+			ATW->y = ATW->ymin;
+			ATW->besttype = 6;
+			if(ATW->ymin+radius/2+1 < ysize)
+				{
+				if(xc+radius/2+1 < xsize && *(*(Lawn+xc+radius/2+1)+ATW->ymin+radius/2+1) != 0)
+					ATW->bestdeg = 0;
+				else if(xc-radius/2-1 >= 0 && *(*(Lawn+xc-radius/2-1)+ATW->ymin+radius/2+1) != 0)
+					ATW->bestdeg = 270;
+				else
+					ATW->bestdeg = -270;
+				}
+			else
+				ATW->bestdeg = -270;
+			ATW->bestscore = score;
+			}
+		}
+	if(AbleToBounceOYRight(Lawn, xsize, ysize, y1, y2, ATW->xmax) == 1)
+		{
+		int score = abs(ATW->ymax - ATW->ymin - 2*radius) + abs(ATW->xmax - ATW->xmin - radius);
+		if(score < ATW->bestscore && *(*(Lawn+ATW->xmax)+yc) != 0)
+			{
+			ATW->x = ATW->xmax;
+			ATW->y = yc;
+			ATW->besttype = 6;
+			if(ATW->xmax-radius/2-1 >= 0)
+				{
+				if(yc+radius/2+1 < ysize && *(*(Lawn+ATW->xmax-radius/2-1)+yc+radius/2+1) != 0)
+					ATW->bestdeg = 180;
+				else if(yc-radius/2-1 >= 0 && *(*(Lawn+ATW->xmax-radius/2-1)+yc-radius/2-1) != 0)
+					ATW->bestdeg = 270;
+				else 
+					ATW->bestdeg = -180;
+				}
+			else 
+				ATW->bestdeg = -180;
+			ATW->bestscore = score;
+			}
+		}
+	if(AbleToBounceOYLeft(Lawn, xsize, ysize, y1, y2, ATW->xmin) == 1)
+		{
+		int score = abs(ATW->ymax - ATW->ymin - 2*radius) + abs(ATW->xmax - ATW->xmin - radius);
+		if(score < ATW->bestscore && *(*(Lawn+ATW->xmin)+yc) != 0)
+			{
+			ATW->x = ATW->xmin;
+			ATW->y = yc;
+			ATW->besttype = 6;
+			if(ATW->xmin+radius/2+1 < xsize)
+				{
+				if(yc+radius/2+1 < ysize && *(*(Lawn+ATW->xmin+radius/2+1)+yc+radius/2+1) != 0)
+					ATW->bestdeg = 0;
+				else if(yc-radius/2-1 >= 0 && *(*(Lawn+ATW->xmin+radius/2+1)+yc-radius/2-1) != 0)
+					ATW->bestdeg = 90;
+				else 
+					ATW->bestdeg = -180;
+				}
+			else 
+				ATW->bestdeg = -360;
+			ATW->bestscore = score;
+			}
+		}
+	}
+
+void TryToFitHalf180(char **Lawn, areatowater *ATW, int xsize, int ysize, int radius)
+	{
+	int xc = (ATW->xmin + ATW->xmax)/2;
+	int yc = (ATW->xmin + ATW->xmax)/2;
+	int x1 = xc - radius;
+	int x2 = x1 + 2*radius;
+	int y1 = yc - radius;
+	int y2 = y1 + 2*radius;
+	int pixcount1 = 0;
+	int pixcount2 = 0;
+	if(AbleToBounceOXDown(Lawn, xsize, ysize, ATW->xmin, ATW->xmin+radius, ATW->ymax) == 1)
+		{
+		int score = abs(ATW->ymax - ATW->ymin - 2*radius) + abs(ATW->xmax - ATW->xmin - radius);//c
+		if(score < ATW->bestscore && *(*(Lawn+ATW->xmin)+ATW->ymax) != 0)
+			{
+			ATW->y = ATW->ymax;
+			ATW->besttype = 5;
+			ATW->bestscore = score;
+			ATW->x = ATW->xmin;
+			ATW->bestdeg = 270;
+			pixcount1 = 1;
+			}
+		else
+			pixcount1 = 0;
+		}
+	if(AbleToBounceOXDown(Lawn, xsize, ysize, ATW->xmax-radius, ATW->xmax, ATW->ymax) == 1)
+		{
+		int score = abs(ATW->ymax - ATW->ymin - 2*radius) + abs(ATW->xmax - ATW->xmin - radius);//c
+		if(score <= ATW->bestscore && *(*(Lawn+ATW->xmax)+ATW->ymax) != 0)
+			{
+			if(pixcount1 == 0)
+				{
+				ATW->y = ATW->ymax;
+				ATW->besttype = 5;
+				ATW->bestscore = score;
+				ATW->x = ATW->xmax;
+				ATW->bestdeg = 90;
+				}
+			else
+				{
+				if(ATW->xmin+radius < xsize)
+					pixcount1 = CountSignedPix(Lawn, ATW->xmin, ATW->xmin+radius, ATW->ymin, ATW->ymax);
+				else 
+					pixcount1 = CountSignedPix(Lawn, ATW->xmin, xsize-1, ATW->ymin, ATW->ymax);
+				if(ATW->xmax-radius >= 0)
+					pixcount2 = CountSignedPix(Lawn, ATW->xmax-radius, ATW->xmax, ATW->ymin, ATW->ymax);
+				else
+					pixcount2 = CountSignedPix(Lawn, 0, ATW->xmax, ATW->ymin, ATW->ymax);
+				if(pixcount2 > pixcount1)
+					{
+					ATW->y = ATW->ymax;
+					ATW->besttype = 5;
+					ATW->bestscore = score;
+					ATW->x = ATW->xmax;
+					ATW->bestdeg = 90;
+					}
+				}
+			}
+		}
+	if(AbleToBounceOXUp(Lawn, xsize, ysize, ATW->xmin, ATW->xmin+radius, ATW->ymin) == 1)
+		{
+		int score = abs(ATW->ymax - ATW->ymin - 2*radius) + abs(ATW->xmax - ATW->xmin - radius);//c
+		if(score < ATW->bestscore && *(*(Lawn+ATW->xmin)+ATW->ymin) != 0)
+			{
+			ATW->y = ATW->ymin;
+			ATW->besttype = 5;
+			ATW->bestscore = score;
+			ATW->x = ATW->xmin;
+			ATW->bestdeg = 270;
+			pixcount1 = 1;
+			}
+		else
+			pixcount1 = 0;
+		}
+	if(AbleToBounceOXUp(Lawn, xsize, ysize, ATW->xmax-radius, ATW->xmax, ATW->ymin) == 1)
+		{
+		int score = abs(ATW->ymax - ATW->ymin - 2*radius) + abs(ATW->xmax - ATW->xmin - radius);//c
+		if(score <= ATW->bestscore && *(*(Lawn+ATW->xmax)+ATW->ymin) != 0)
+			{
+			if(pixcount1 == 0)
+				{
+				ATW->y = ATW->ymax;
+				ATW->besttype = 5;
+				ATW->bestscore = score;
+				ATW->x = ATW->xmax;
+				ATW->bestdeg = 90;
+				}
+			else
+				{
+				if(ATW->xmin+radius < xsize)
+					pixcount1 = CountSignedPix(Lawn, ATW->xmin, ATW->xmin+radius, ATW->ymin, ATW->ymax);
+				else 
+					pixcount1 = CountSignedPix(Lawn, ATW->xmin, xsize-1, ATW->ymin, ATW->ymax);
+				if(ATW->xmax-radius >= 0)
+					pixcount2 = CountSignedPix(Lawn, ATW->xmax-radius, ATW->xmax, ATW->ymin, ATW->ymax);
+				else
+					pixcount2 = CountSignedPix(Lawn, 0, ATW->xmax, ATW->ymin, ATW->ymax);
+				if(pixcount2 > pixcount1)
+					{
+					ATW->y = ATW->ymin;
+					ATW->besttype = 5;
+					ATW->bestscore = score;
+					ATW->x = ATW->xmax;
+					ATW->bestdeg = 90;
+					}
+				}
+			}
+		}
+	if(AbleToBounceOYRight(Lawn, xsize, ysize, ATW->ymax+radius, ATW->ymax, ATW->xmax) == 1)
+		{
+		int score = abs(ATW->ymax - ATW->ymin - radius) + abs(ATW->xmax - ATW->xmin - 2*radius);
+		if(score < ATW->bestscore && *(*(Lawn+ATW->xmax)+ATW->ymax) != 0)
+			{
+			ATW->y = ATW->ymax;
+			ATW->besttype = 5;
+			ATW->bestscore = score;
+			ATW->x = ATW->xmax;
+			ATW->bestdeg = 0;
+			pixcount1 = 1;
+			}
+		else
+			pixcount1 = 0;
+			}
+		}
+	if(AbleToBounceOYRight() == 1)
+		{
+
+		}
+	if(AbleToBounceOYLeft() == 1)
+		{
+
 		}
 	}
 
 void TryToUpdateATW(char **Lawn, areatowater *ATW, char *cont, int xsize, int ysize, int radius360, int Sprstats[])
 	{
 	if((int)Sprstats[3]*STATERR == ATM->pixcount)
-		TryToFit360(ATW, radius360);
+		TryToFit360(Lawn, ATW, radius360);
 	if((int)Sprstats[3]*STATERR/2 == ATM->pixcount)
 		TryToFitHalf360(Lawn, ATW, xsize, ysize, radius360);
 	if((int)Sprstats[2]*STATERR == ATM->pixcount)
-		
+		TryToFit270(Lawn, ATW, 2*radius360);
 	if((int)Sprstats[2]*STATERR/2 == ATM->pixcount)
-
+		TryToFitHalf270(Lawn, ATW, xsize, ysize, 2*radius360);
 	if((int)Sprstats[1]*STATERR == ATM->pixcount)
 		TryToFit180(Lawn, ATW, 3*radius360);
 	if((int)Sprstats[1]*STATERR/2 == ATM->pixcount)
-
+		TryToFitHalf180(Lawn, ATW, xsize, ysize, 3*radius360);
 	if((int)Sprstats[0]*STATERR == ATM->pixcount)
 
 	if((int)Sprstats[0]*STATERR/2 == ATM->pixcount)
