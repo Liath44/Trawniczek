@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "output.h"
 
-int PutOnList(sprlist **Sprinklers, int type, int x, int y)
+int PutOnList(sprlist *Sprinklers, int type, int x, int y)
 {
 int error = 1;
 sprlist *temp = malloc(sizeof(sprlist));
@@ -16,13 +16,7 @@ temp->x = x;
 temp->y = y;
 temp->next = NULL;
 
-sprlist *last = *Sprinklers;
-
-if(*Sprinklers == NULL)
-    {
-        *Sprinklers = temp;
-        return error;
-    }
+sprlist *last = Sprinklers;
 
 while(last->next != NULL)
         last = last->next;
@@ -32,9 +26,9 @@ last->next = temp;
 return error;
 }
 
-void FreeSprinklers(sprlist **Sprinklers)
+void FreeSprinklers(sprlist *Sprinklers)
 {
-    sprlist *temp = *Sprinklers;
+    sprlist *temp = Sprinklers;
     sprlist *rmv;
     while(temp != NULL)
     {
