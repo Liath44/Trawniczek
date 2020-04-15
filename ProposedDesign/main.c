@@ -16,41 +16,31 @@ void FreeMemory(sprlist *Sprinklers, FILE *lawnfile, char **Lawn, parameters *Pa
 void FreeLawn(FILE *lawnfile, char **Lawn, parameters *Param)
 	{
 	fclose(lawnfile);
-	//(...)
+	for (int i = 0; i < Param->ysize; i++) free(Lawn[i]);
+	free(Lawn);
+	free(Param);
 	}
 
 int main(int argc, char *args[])
 	{
-	int errCode = 0;
 	if(argc <= 1)
+        {
+		fprintf(stderr, "No input file.\n");
+		return EXIT_FAILURE;
+        }
+    FILE *lawnfile = fopen(args[1], "r");
+    if(lawnfile == NULL)
 		{
-		fprintf(stderr, "No input file\n");
+		fprintf(stderr, "Couldn't open input file.\n");
 		return EXIT_FAILURE;
 		}
-	FILE *lawnfile = fopen(args[1], "r");
-	if(lawnfile == NULL)
-		{
-		fprintf(stderr, "Couldn't open input file\n");
-		return EXIT_FAILURE;
-		}
-	char **Lawn;
-	parameters Param;
-	errCode = InitializeParameters(lawnfile, &Param, argc>2 ? atoi(argc[3]) : 100 );
+    parameters Param;
+	InitializeParameters(lawnfile, &Param, argc, args);
+    char **Lawn;
+	int errCode;
+	errCode = CreateLawn(lawnfile, &Param, &Lawn);
 	if (errCode != 0)
 		{
-		return EXIT_FAILURE;
-		}
-	rewind(lawnfile);
-	errCode = CreateLawn(lawnfile, &Param, Lawn);
-	if (errCode != 0)
-		{
-		return EXIT_FAILURE;
-		}
-	fclose(lawnfile);
-	if(Lawn == NULL)
-		{
-		FreeLawn(lawnfile, Lawn, &Param);
-		fprintf(stderr, "Memory allocation error\n");
 		return EXIT_FAILURE;
 		}
 
