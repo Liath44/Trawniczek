@@ -40,7 +40,7 @@ void FreeSprinklers(sprlist *Sprinklers)
 
 int CreateBitmap(FILE *bitmap, char **Lawn, parameters *Param)
 {
-    int max = 16;
+    	int max = 16;
 	uint32_t w1 = Param->xsize;
 	uint32_t h1 = Param->ysize;
 	int errorcode;
