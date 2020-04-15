@@ -37,3 +37,43 @@ void FreeSprinklers(sprlist *Sprinklers)
         free(rmv);
     }
 }
+
+void CreateOutputFile(FILE *output, sprlist *Sprinklers)
+{
+    sprlist *last = Sprinklers;
+    int cnt = 0;
+    int type;
+    int x;
+    int y;
+
+    while(last != NULL)
+        {
+        last = last->next;
+        ++cnt;
+        }
+
+    fprintf(output, "Liczba wszytskich podlewaczek: %d\n\n", cnt-1);
+    cnt = 0;
+    last = Sprinklers;
+
+    while(last != NULL)
+        {
+        if(cnt != 0)
+            {
+                type = last->type;
+                x = last->x;
+                y = last->y;
+                if(type == 90)
+                  fprintf(output, "typ: %d,  współrzędne: (%d, %d) \n", type, x, y);
+                else
+                  fprintf(output, "typ: %d, współrzędne: (%d, %d) \n", type, x, y);
+            }
+        last = last->next;
+        if(cnt == 0)
+            {
+                ++cnt;
+            }
+        }
+
+    fclose(output);
+}
