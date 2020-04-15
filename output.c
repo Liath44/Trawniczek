@@ -74,6 +74,4 @@ void CreateOutputFile(FILE *output, sprlist *Sprinklers)
                 ++cnt;
             }
         }
-
-    fclose(output);
 }
