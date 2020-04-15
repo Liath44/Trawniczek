@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "output.h"
 
 int PutOnList(sprlist **Sprinklers, int type, int x, int y)
 {
