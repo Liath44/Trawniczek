@@ -22,9 +22,9 @@ typedef struct _sprlist
  *
  * sprlist *Sprinklers - list of already placed sprinklers
  *
- * short type - sprinkler's type (90/180/270/360)
+ * int type - sprinkler's type (90/180/270/360)
  *
- * short x, y - sprinkler's coordinates
+ * int x, y - sprinkler's coordinates
  *
  * Returns 0 on failure
  */
