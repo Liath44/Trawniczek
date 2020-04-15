@@ -38,6 +38,50 @@ void FreeSprinklers(sprlist *Sprinklers)
     }
 }
 
+int CreateBitmap(FILE *bitmap, char **Lawn, parameters *Param)
+{
+    int max = 16;
+	uint32_t w1 = Param->xsize;
+	uint32_t h1 = Param->ysize;
+	int errorcode;
+	errorcode = InitializeBitmap(b, w1, h1);
+	
+	if(errorcode = 0)
+        {
+            return 0;
+        }
+    
+	for(int i = hl-1; i >= 0; i--)
+        for (int j = wl-1; j >= 0; j--)
+        {
+            if(lawn[i][j] == 0)
+            {
+                PixelLawn(b, 'x', 0);
+            }
+            else if (lawn[i][j] == 1)
+            {
+                PixelLawn(b, 'n', 0);
+            }
+            else if (lawn[i][j] > 1 && lawn[i][j] < 12) 
+            {
+                PixelLawn(b, 'w', lawn[i][j]-1);
+            }
+            else 
+            { 
+                if(lawn[i][j] < max)
+                    {
+                         PixelLawn(b, 'o', lawn[i][j]-1);
+                    }
+                else
+                    {
+                        PixelLawn(b, 'o', max);
+                    }
+            }
+        }
+        
+	return 1;
+}
+
 void CreateOutputFile(FILE *output, sprlist *Sprinklers)
 {
     sprlist *last = Sprinklers;
