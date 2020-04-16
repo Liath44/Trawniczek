@@ -1,0 +1,203 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage[]{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\PassOptionsToPackage{hyphens}{url} % url is loaded by hyperref
+\usepackage[unicode=true]{hyperref}
+\hypersetup{
+            pdftitle={Specyfikacja funkcjonalna symulatora układu N-ciał: nsim},
+            pdfauthor={Bartosz Chaber},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+% set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+
+
+\title{Specyfikacja funkcjonalna programu: \texttt{trawniczek}}
+\author{Dragun Maciej, Piłka Hubert, Smoliński Mateusz}
+\date{16.04.2020}
+
+\begin{document}
+\maketitle
+
+\section{Cel projektu}\label{header-n231}
+
+Program \texttt{trawniczek} ma na celu wyznaczenie rozmieszczenia podlewaczek na prostokątnej działce,
+tak aby był on jak najrównomierniej podlany. Program wykonywany jest w linii poleceń z ścieżką do pliku
+tekstowego będącego rozkładem działki w postaci opisanej poniżej i ewentualnymi innymi argumentami, opisanymi poniżej. Jako wynik program zwraca plik tekstowy zawierający rozkład podlewaczek i bitmapę 
+wizualizującą stan nawodnienia przy takim rozkładzie.
+
+\section{Dane wejściowe}\label{header-n233}
+
+Do swojego działania program potrzebuje danych o śledzonych ciałach.
+Każde z ciał musi być opisane następującymi parametrami:
+
+\begin{itemize}
+\item
+  etykieta/nazwa: nie jest używana w symulacji, jednak jest zapisywana
+  do pliku wyjściowego w celach wizualizacyjnych; etykieta może zawierać
+  znaki \texttt{a-zA-Z0-9\ -} oraz nie może być dłuższa niż 32 znaki;
+\item
+  masa ciała (M): podana w kg, dopuszczalne wartości M \textgreater{} 0;
+\item
+  położenie w przestrzeni 3D (x, y, z): niezbędne jest zdefiniowanie
+  położenia \emph{x} i \emph{y}. W przypadku niezdefiniowanego położenia
+  \emph{z}, program założy z=0; położenie podane w metrach, względem
+  pewnego początku układu odniesienia;
+\item
+  bieżąca prędkość w przestrzeni 3D (vx, vy, vz): analogicznie jak w
+  przypadku położenia, niezdefiniowana prędkość \emph{vz} będzie
+  zinterpretowana jako vz=0; prędkości podane są w m/s;
+\item
+  promień obiektu (R): podany w metrach, dopuszczalne tylko R
+  \textgreater{} 0.
+\end{itemize}
+
+Parametry symulacji numerycznej są modyfikowane za pomocą argumentów
+wywołania programu.
+
+Każde z ciał jest zdefiniowane w jednej linii, jego parametry oddzielone
+są od siebie znakiem \texttt{;}. Program wczytuje kolejne ciała aż do
+napotkania linii zawierającej tylko znak \texttt{.}.
+
+Przykład danych wejściowych:
+
+\begin{verbatim}
+object_a;10; 1.5 2.0;15.0 0.0 0.0;0.2
+object_b; 4;-0.5 0.0;-15.0 0.0;0.2
+.
+\end{verbatim}
+
+W powyższym pliku zdefiniowane są dwa ciała \texttt{object\_a} i
+\texttt{object\_b} o masach (odpowiednio) 10 kg i 4 kg. Położenie
+obiektu \texttt{object\_a} to {[}1,5m; 2m; 0m{]}, \texttt{object\_b} to
+{[}-0,5m; 0m; 0m{]}. Prędkości obiektów to:
+
+\begin{itemize}
+\item
+  \texttt{object\_a} \textless{}15m/s, 0m/s, 0m/s\textgreater{},
+\item
+  \texttt{object\_a} \textless{}-15m/s, 0m/s, 0m/s\textgreater{}.
+\end{itemize}
+
+\section{Argumenty wywołania programu}\label{header-n256}
+
+Program \texttt{nsim} akceptuje następujące argumenty wywołania:
+
+\begin{itemize}
+\item
+  \texttt{-\/-timestep\ dt} precyzuje krok czasowy wykorzystywany
+  podczas całkowania numerycznego; podany w sekundach; domyślnie
+  \texttt{dt\ =\ 60};
+\item
+  \texttt{-\/-iterations\ n} określa liczbę analizowanych kroków
+  czasowych; domyślnie \texttt{n\ =\ 1000}, liczba iteracji nie może być
+  mniejsza od 1;
+\item
+  \texttt{-\/-integrator\ euler\textbar{}verlet} pozwala na wybór
+  algorytmu całkowania numerycznego: \texttt{euler} określa metodę
+  całkowania Eulera, \texttt{verlet} określa metodę całkowania Verleta;
+  domyślna wartość to \texttt{euler};
+\item
+  \texttt{-\/-collision\ none\textbar{}remove\textbar{}momentum-exchange\textbar{}sticky}
+  określa sposób obsługi kolizji między ciałami: \texttt{none} wyłącza
+  kolizje, \texttt{remove} usuwa obydwa ciała,
+  \texttt{momentum-exchange} odpowiada zderzeniu sprężystemu,
+  \texttt{sticky} odpowiada zderzeniu niesprężystemu;
+\item
+  \texttt{-\/-relative-mass\ ratio} próg stosunku mas ciał poniżej
+  którego pomija się wpływ ciał lżejszych; domyślna wartość
+  \texttt{ratio=0.01};
+\item
+  \texttt{-\/-radius-of-influence\ R} odległość powyżej której nie
+  uwzględniamy wpływu ciała; domyślna wartość \texttt{R=1e8};
+\item
+  \texttt{-\/-bodies\ filename} nazwa pliku, z którego wczytane będą
+  parametry ciał (opisane w \emph{Dane wejściowe}); domyślnie jest to
+  wartość pusta, oznaczająca pobieranie danych ze standardowego wejścia;
+\item
+  \texttt{-\/-output\ filename} nazwa pliku, do którego zapisane zostaną
+  dane;
+\end{itemize}
+
+Przykładowe wywołania programu:
+
+\begin{itemize}
+\item
+  \texttt{./nsim\ -\/-timestep\ 3600\ -\/-bodies\ solar.dat\ -\/-output\ solar.out}
+  , efektem będzie analiza pliku \texttt{solar.dat} z krokiem czasowym 1
+  godzina, dane wynikowe zostaną zapisane do pliku \texttt{solar.out}.
+  Program nie będzie analizować kolizji. Zostanie zastosowana metoda
+  całkowania Eulera. 
+\end{itemize}
+
+\section{Teoria}\label{header-n279}
+
+{[}tutaj opisałbym jak to jest liczone -\/- patrz tablica{]}
+
+\section{Komunikaty błędów}\label{header-n281}
+
+Program \texttt{nsim} stara się kontynuować pracę mimo napotkania
+nieprawidłowych danych w celu poprawienia diagnostyki danych
+wejściowych.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  Masa ciała w danych wejściowych mniejsza/równa 0:
+  \texttt{Linia\ 31:\ Masa\ ciała\ musi\ być\ większa\ od\ 0\ kg.\ Wczytano:\ "-2.1".\ Ciało\ zostało\ pominięte.}
+  Program wykrył ujemną masę (o wartości \emph{-2.1}) w linii 31 danych
+  wejściowych. Program ignoruje nieprawidłowe ciało.
+\item
+  Brak poprawnie wczytanych ciał:
+  \texttt{W\ podanych\ danych\ wejściowych\ brak\ poprawnie\ zdefiniowanych\ ciał.\ Przerywam\ działanie.}
+
+  Komunikat pojawia się, gdy w podanych danych wejściowych program nie
+  znajdzie poprawnie zdefiniowanych ciał. Może to wynikać z tego, że
+  plik jest pusty, albo wszystkie wpisy zawierając błędy (wtedy pojawią
+  się stosowne komunikaty jak w 1.).
+\end{enumerate}
+
+\end{document}
