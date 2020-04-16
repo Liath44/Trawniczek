@@ -897,7 +897,7 @@ void TryToFit360(char **Lawn, areatowater *ATW, int radius)
 		}
 	}
 
-int AbleToBounceOYLeft(char **Lawn, int xsize, int ysize, int y1, int y2, int x)
+/*int AbleToBounceOYLeft(char **Lawn, int xsize, int ysize, int y1, int y2, int x)
 	{
 	int start = y1;
 	int stop = y2;
@@ -1038,7 +1038,7 @@ void TryToFitHalf360(char **Lawn, areatowater *ATW, int xsize, int ysize, int ra
 			ATW->bestscore = score;
 			}
 		}
-	}
+	}*/
 
 int CountSignedPix(char **Lawn, int xl, int xr, int yu, int yd)
 	{
@@ -1104,7 +1104,7 @@ void TryToFit180(char **Lawn, areatowater *ATW, int radius)
 		}
 	}
 
-void TryToFit270(char **Lawn, areatowater *ATW, int radius)
+void TryToFit270(char **Lawn, areatowater *ATW, int radius)//TODO: FIX TO ADD 360 - no, add that during placing sprinklers
 	{
 	int score = abs(ATW->xmax - ATW->xmin - 2*radius) + abs(ATW->ymax - ATW->ymin - 2*radius);
 	int xc = (ATW->xmin + ATW->xmax)/2;
@@ -1119,7 +1119,7 @@ void TryToFit270(char **Lawn, areatowater *ATW, int radius)
 		}
 	}
 
-void TryToFitHalf270(char **Lawn, areatowater *ATW, int xsize, int ysize, int radius)
+/*void TryToFitHalf270(char **Lawn, areatowater *ATW, int xsize, int ysize, int radius)
 	{
 	int xc = (ATW->xmin + ATW->xmax)/2;
 	int yc = (ATW->xmin + ATW->xmax)/2;
@@ -1383,26 +1383,106 @@ void TryToFitHalf180(char **Lawn, areatowater *ATW, int xsize, int ysize, int ra
 		{
 
 		}
+	}*/
+
+void SortTab(int tab[], int size)
+	{
+	for(int i = 1; i < size; i++)
+		{
+		int j = i;
+		while(j != 0 && tab[j] < tab[j-1])
+			{
+			int piv = tab[j];
+			tab[j] = tab[j-1];
+			tab[j-1] = piv;
+			--j;
+			}
+		}
+	}
+
+void TryToFit90(char **Lawn, areatowater *ATW, int radius)
+	{
+	int score = abs(ATW->xmax - ATW->xmin - radius) + abs(ATW->ymax - ATW->ymin - radius);
+	int xc = (ATW->xmin + ATW->xmax)/2;
+	int yc = (ATW->ymin + ATW->ymax)/2;
+	if(score < ATW->bestscore)
+		{
+		int pixcounttab[] = 
+			{
+			CountSignedPix(Lawn, ATW->xmin, xc, ATW->ymin, yc),
+			CountSignedPix(Lawn, xc, ATW->xmax, ATW->ymin, yc),
+			CountSignedPix(Lawn, ATW->xmin, xc, yc, ATW->ymax),
+			CountSignedPix(Lawn, xc, ATW->xmax, yc, ATW->ymax)
+			};
+		int sortedtab[] = 
+			{
+			pixcounttab[0],
+			pixcounttab[1],
+			pixcounttab[2],
+			pixcounttab[3]
+			};
+		SortTab(sortedtab, 4);
+		int cont = 1;
+		for(int i = 0; i < 4 && cont == 1; i++)
+			{
+			if(sortedtab[i] == pixcounttab[0] && *(*(Lawn+ATW->xmax)+ATW->ymax) != 0)
+				{
+				cont = 0;
+				ATW->x = ATW->xmax;
+				ATW->y = ATW->ymax;
+				ATW->besttype = 0;
+				ATW->bestdeg = 90;
+				ATW->bestscore = score;
+				}
+			else if(sortedtab[i] == pixcounttab[1] && *(*(Lawn+ATW->xmin)+ATW->ymax) != 0)
+				{
+				cont = 0;
+				ATW->x = ATW->xmin;
+				ATW->y = ATW->ymax;
+				ATW->besttype = 0;
+				ATW->bestdeg = 0;
+				ATW->bestscore = score;
+				}
+			else if(sortedtab[i] == pixcounttab[2] && *(*(Lawn+ATW->xmax)+ATW->ymin) != 0)
+				{
+				cont = 0;
+				ATW->x = ATW->xmax;
+				ATW->y = ATW->ymin;
+				ATW->besttype = 0;
+				ATW->bestdeg = 180;
+				ATW->bestscore = score;
+				}
+			else if(sortedtab[i] == pixcounttab[3] && *(*(Lawn+ATW->xmin)+ATW->ymin) != 0)
+				{
+				cont = 0;
+				ATW->x = ATW->xmin;
+				ATW->y = ATW->ymin;
+				ATW->besttype = 0;
+				ATW->bestdeg = 270;
+				ATW->bestscore = score;
+				}
+			}
+		}
 	}
 
 void TryToUpdateATW(char **Lawn, areatowater *ATW, char *cont, int xsize, int ysize, int radius360, int Sprstats[])
 	{
 	if((int)Sprstats[3]*STATERR == ATM->pixcount)
 		TryToFit360(Lawn, ATW, radius360);
-	if((int)Sprstats[3]*STATERR/2 == ATM->pixcount)
-		TryToFitHalf360(Lawn, ATW, xsize, ysize, radius360);
+	//if((int)Sprstats[3]*STATERR/2 == ATM->pixcount)
+		//TryToFitHalf360(Lawn, ATW, xsize, ysize, radius360);
 	if((int)Sprstats[2]*STATERR == ATM->pixcount)
 		TryToFit270(Lawn, ATW, 2*radius360);
-	if((int)Sprstats[2]*STATERR/2 == ATM->pixcount)
-		TryToFitHalf270(Lawn, ATW, xsize, ysize, 2*radius360);
+	//if((int)Sprstats[2]*STATERR/2 == ATM->pixcount)
+		//TryToFitHalf270(Lawn, ATW, xsize, ysize, 2*radius360);
 	if((int)Sprstats[1]*STATERR == ATM->pixcount)
 		TryToFit180(Lawn, ATW, 3*radius360);
-	if((int)Sprstats[1]*STATERR/2 == ATM->pixcount)
-		TryToFitHalf180(Lawn, ATW, xsize, ysize, 3*radius360);
+	//if((int)Sprstats[1]*STATERR/2 == ATM->pixcount)
+		//TryToFitHalf180(Lawn, ATW, xsize, ysize, 3*radius360);
 	if((int)Sprstats[0]*STATERR == ATM->pixcount)
-
-	if((int)Sprstats[0]*STATERR/2 == ATM->pixcount)
-
+		TryToFit90(Lawn, ATW, 4*radius);
+	//if((int)Sprstats[0]*STATERR/2 == ATM->pixcount)
+		//TryToFitHalf90(Lawn, ATW, xsize, ysize, 4*radius360);
 	if((int)Sprstats[1]*STATERR < ATM->pixcount)
 		*cont = 'n';
 	}
@@ -1525,7 +1605,7 @@ int DoTheJob(char **Lawn, parameters *Param, sprlist *Sprinklers)
 	pointlist *PivAreas = Areas;
 	if(Areas == NULL)
 		return 0;
-	int Sprstats[4] = {0, 0, 0, 0 /* DODAĆ FUNKCJE OBLICZAJĄCE */};
+	int Sprstats[4] = {0, 0, 0, 0 /* TODO: DODAĆ FUNKCJE OBLICZAJĄCE */};
 	while(Areas != NULL)
 		{
 		reclist *Rectangles = malloc(sizeof(*Rectangles));
