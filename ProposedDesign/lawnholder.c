@@ -10,7 +10,16 @@
 
 double CalculateMean(char **Lawn, parameters *Param)
 	{
-	return 1.0;
+	    double Mean = 0.0;
+	    for (int i = 0; i < Param->ysize; i++)
+        {
+            for (int j = 0; j < Param->xsize; j++)
+            {
+                Mean += lawn[i][j];
+            }
+        }
+        Mean=Mean/nlawn - 1.0;
+        return Mean;
 	}
 
 //dwa razy podlać od razu
@@ -103,7 +112,7 @@ void PutPlusLeft(char **Lawn, int xsize, int x, int y, int radius, int time, int
 		--i;
 		}
 	}
-
+[]
 void PutPlusRight(char **Lawn, int xsize, int x, int y, int radius, int time, int water)
 	{
 	int i = x+1;
@@ -422,7 +431,7 @@ void Quadrant1(char **Lawn, int xsize, int ysize, int x, int y, int radius, int 
 
 void Quadrant2(char **Lawn, int xsize, int ysize, int x, int y, int radius, int time, int water)
 	{
-	Quadrant2DownUp(Lawn, xsize, ysize, x, y, radius, time, water);	
+	Quadrant2DownUp(Lawn, xsize, ysize, x, y, radius, time, water);
 	Quadrant2RightLeft(Lawn, xsize, ysize, x, y, radius, time, water);
 	}
 
@@ -462,7 +471,7 @@ void Put90(char **Lawn, int xsize, int ysize, int radius, int time, int x, int y
 		{
 		PutPlusDown(Lawn, ysize, x, y, radius, time, water);
 		PutPlusRight(Lawn, xsize, x, y, radius, time, water);
-		Quadrant4(Lawn, xsize, ysize, x, y, radius, time, water);	
+		Quadrant4(Lawn, xsize, ysize, x, y, radius, time, water);
 		}
 	}
 
