@@ -108,9 +108,9 @@ void CreateOutputFile(FILE *output, sprlist *Sprinklers)
                 x = last->x;
                 y = last->y;
                 if(type == 90)
-                  fprintf(output, "typ: %d,  współrzędne: (%d, %d) \n", type, x, y);
+                  fprintf(output, "typ: %d,  koordynaty: (%d, %d) \n", type, x, y);
                 else
-                  fprintf(output, "typ: %d, współrzędne: (%d, %d) \n", type, x, y);
+                  fprintf(output, "typ: %d, koordynaty: (%d, %d) \n", type, x, y);
             }
         	last = last->next;
         	if(cnt == 0)
