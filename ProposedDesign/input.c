@@ -110,7 +110,7 @@ void fillSquare(char **lawn, int x, int y, char c, int pixel)
     {
         for (int i = 0; i < pixel; i++)
         {
-            lawn[y*pixel+i][x*pixel+j] = c;
+            lawn[x*pixel+i][y*pixel+j] = c;
         }
     }
 }
@@ -128,7 +128,7 @@ int BiggerLawn(parameters *P, char ***lawn)
         return -5;
     }
     *lawn = temp_lawn;
-    for (int i = 0; i < P->ysize; i++)
+    for (int i = 0; i < P->xsize; i++)
     {
         char * temp_row = (char *) realloc((*lawn)[i], temp_ysize * sizeof *(temp_row));
         if (temp_row == NULL)
@@ -138,7 +138,7 @@ int BiggerLawn(parameters *P, char ***lawn)
         }
         (*lawn)[i] = temp_row;
     }
-    for (int i = P->ysize; i < temp_xsize; i++)
+    for (int i = P->xsize; i < temp_xsize; i++)
     {
         char * temp_row = (char *) malloc(temp_ysize * sizeof *(temp_row));
         if (temp_row == NULL)
@@ -158,7 +158,7 @@ int ReduceLawn(parameters *P, char ***lawn, int x, int y)
     //first remove rows form the end, realloc and then shorten the rest (remove columns)
     int temp_ysize = y * P->pixelsize; //new number of rows
     int temp_xsize = x * P->pixelsize; //new number of columns
-    for (int i = temp_xsize; i < P->ysize; i++)
+    for (int i = temp_xsize; i < P->xsize; i++)
     {
         free((*lawn)[i]);
     }
