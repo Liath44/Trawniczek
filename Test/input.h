@@ -5,6 +5,12 @@
 #include <stdio.h>
 #include "lawnholder.h"
 
+#define maxLawnWidth 8000
+#define maxLawnHeigh 4000
+#define emp '-' //symbol of the empty space
+#define blk 'x' //symbol of the blocked space
+#define pxl 100 //size of one square
+
 /*
  * Transforms information from lawnfile into matrix
  * (0 - non-lawn, 1...n - water level - 1).
@@ -35,7 +41,7 @@ int CreateLawn(FILE *lawnfile, parameters *Param, char ***lawn);
  * lawn's parameters. Function initializes fields of this structure
  *
  */
-void InitializeParameters(FILE *lawnfile, parameters *Param, int argc, char ** argv);
+void InitializeParameters(parameters *Param, int argc, char ** argv);
 
 /*
  * Fills the desired square on matrix with corresponding values

@@ -17,7 +17,7 @@ int main(int argc, char ** args)
 		return EXIT_FAILURE;
 		}
     parameters Param;
-	InitializeParameters(lawnfile, &Param, argc, args);
+	InitializeParameters(&Param, argc, args);
     char **Lawn;
 	int errCode;
 	errCode = CreateLawn(lawnfile, &Param, &Lawn);
@@ -36,9 +36,9 @@ int main(int argc, char ** args)
 	printf("radius360 = %d\n", Param.radius360);
 	printf("currentmean = %f\n", Param.currentmean);
 
-	for (int i = 0; i < Param.ysize; i+=10)
+	for (int j = 0; j < Param.ysize; j+=10)
     {
-        for (int j = 0; j < Param.xsize; j+=10)
+        for (int i = 0; i < Param.xsize; i+=10)
         {
             printf("%d ", Lawn[i][j]);
         }
