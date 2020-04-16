@@ -100,7 +100,27 @@ void InitializeParameters(parameters *P, int argc, char ** args)
     P->ysize = 4 * P->pixelsize;
     P->nlawn = 0;
     P->time = argc > 2 ? atoi(args[2]) : 100;
+    if (P->time<1)
+    {
+        fprintf(stderr, "Time value less than 1.\n");
+        P->time = 100;
+    }
+    if (P->time>500)
+    {
+        fprintf(stderr, "Time value more than 500.\n");
+        P->time = 100;
+    }
     P->radius360 = argc > 3 ? atoi(args[3]) : 200;
+    if (P->radius360<50)
+    {
+        fprintf(stderr, "Radius360 value less than 50.\n");
+        P->time = 200;
+    }
+    if (P->radius360>300)
+    {
+        fprintf(stderr, "Radius360 value more than 300.\n");
+        P->time = 200;
+    }
     P->currentmean = 0;
 }
 
