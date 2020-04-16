@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "output.h"
+#include "lawnholder.h"
+#include "picasso8.h"
 
 /*
  * First sprinkler is set in gardener.c
