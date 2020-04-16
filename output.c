@@ -1,7 +1,8 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include "output.h"
 
+/*
+ * First sprinkler is set in gardener.c
+ */
 int PutOnList(sprlist *Sprinklers, int type, int x, int y)
 {
 	int error = 1;
@@ -52,8 +53,8 @@ int CreateBitmap(FILE *bitmap, char **Lawn, parameters *Param)
         }
     
 	for(int i = hl-1; i >= 0; i--)
-        for (int j = wl-1; j >= 0; j--)
-        {
+          for (int j = wl-1; j >= 0; j--)
+          {
             if(lawn[i][j] == 0)
             {
                 PixelLawn(b, 'x', 0);
@@ -77,10 +78,14 @@ int CreateBitmap(FILE *bitmap, char **Lawn, parameters *Param)
                         PixelLawn(b, 'o', max);
                     }
             }
-        }
+          }
         
 	return 1;
 }
+
+/*
+ * First sprinkler is a dummy so it starts from the second one
+ */
 
 void CreateOutputFile(FILE *output, sprlist *Sprinklers)
 {
@@ -112,10 +117,10 @@ void CreateOutputFile(FILE *output, sprlist *Sprinklers)
                 else
                   fprintf(output, "typ: %d, koordynaty: (%d, %d) \n", type, x, y);
             }
-        	last = last->next;
-        	if(cnt == 0)
-            	{
-                    ++cnt;
-            	}
+        last = last->next;
+        if(cnt == 0)
+            {
+                ++cnt;
+            }
         }
 }
