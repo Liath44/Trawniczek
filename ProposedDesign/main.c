@@ -41,6 +41,7 @@ int main(int argc, char *args[])
 	errCode = CreateLawn(lawnfile, &Param, &Lawn);
 	if (errCode != 0)
 		{
+        FreeLawn(lawnfile, Lawn, &Param);
 		return EXIT_FAILURE;
 		}
 
