@@ -18,7 +18,7 @@ double CalculateMean(char **Lawn, parameters *Param)
                 Mean += lawn[i][j];
             }
         }
-        Mean=Mean/nlawn - 1.0;
+        Mean=Mean/nlawn;
         return Mean;
 	}
 
