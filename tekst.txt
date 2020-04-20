@@ -1,6 +1,0 @@
-Liczba wszytskich podlewaczek: 4
-
-typ: 90,  wspó³rzêdne: (100, 12) 
-typ: 360, wspó³rzêdne: (2, 5) 
-typ: 270, wspó³rzêdne: (15, 5) 
-typ: 180, wspó³rzêdne: (11, 55) 
